@@ -2,7 +2,7 @@ function [eps] = defineEpocNimbusShoes(nantype)
 
 % names={'Base', 'EarlyA', 'LateA' ,'EarlyP', 'LateP'};
 
-names={'BaseNoShoes','TMBaseShoes','SplitPos','SplitNeg','OGNimbus','Adaptation','EMGss-post','OGpostEarly','OGpostLate','WashoutEarly','WashoutLate'};
+names={'BaseNoShoes','TMBaseShoes','SplitPos','SplitNeg','OGNimbus','Adaptation','OGpost-Adapt_{SS}','OGpostEarly','OGpostLate','WashoutEarly','WashoutLate'};
 
 eps=defineEpochs(names,...
                 {'OG base: no Nimbus','TM Nimbus: Nimbus off 3','Short Split +','Short Split -','OG nimbus: Nimbus off','Adaptation','OG post: No nimbus','OG post: No nimbus','OG post: No nimbus','Washout: Nimbus off','Washout: Nimbus off'},...
