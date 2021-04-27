@@ -6,15 +6,19 @@
 % we need to load to expData files due to the problems with sensor 8 box 1
 % after trial 1
 
-load('NimbG_Boyan_RPER.mat')
-expData2=expData;
-load('NimG_Boyan.mat')
+% load('NimbG_Boyan_RPER.mat')
+% expData2=expData;
+% load('NimbG_Boyan.mat')
 
 %% Align it
 % conds={'TM Base','Adap','Post adapt','Shor Split'};
-conds={'OG base: no Nimbus','TM Nimbus: Nimbus off 3','Short Split +',...
-    'Short Split -','OG nimbus: Nimbus off','Adaptation',...
-    'OG post: No nimbus','Washout: Nimbus off'};
+% conds={'OG base: no Nimbus','TM Nimbus: Nimbus off 3','Short Split +',...
+%     'Short Split -','OG nimbus: Nimbus off','Adaptation',...
+%     'OG post: No nimbus','Washout: Nimbus off'};
+
+conds={'OG Base','TM Base 3','Left Split',...
+    'Right Split','NIM Base','NIM Adaptation',...
+    'OG Post','NIM Post'};
 
 % condlegend={'TM base','Early Adapt','Late Adapt','Early Post','Late Post','Short Pos','Short Neg'};
 condlegend=conds;
@@ -27,15 +31,18 @@ muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 
 % muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'ADM'};
 % muscle={'TA', 'PER', 'SOL', 'LG','MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF'};
 lm=1:2:35;
-late=0;
+late=1;
 if late==1
 %     condlegend={'No Nimbus','TM: Nimbus off 3',...
 %         'OG Nimbus: Nimbus off','Adaptation',...
 %         'Generalization Late','Washout Late'};
-    condlegend={'No Nimbus','OG Nimbus: Nimbus off','OG post: No nimbus'};
+    condlegend={'OGbase_{late}','TMbase3','NIMbase_{late}','OGpost_{late}'};
+    
+%     condlegend={'OGbase_{late}','TMbase3_{late}','NIMbase_{late}','Adaptation_{late}',...
+%         'OGpost_{late}','NIMpost_{late}'};
 else
-    condlegend={'OG nimbus: Nimbus off','Short Split +','Short Split -',...
-        'Generalization','Washout'};
+    condlegend={'OGbase','Pos Short','Neg Short',...
+        'OG post','NIM post'};
     
 end
 % for late=1:2
@@ -54,12 +61,12 @@ for m=1:length(muscle)
     LTMBaseoff=expData.getAlignedField('procEMGData',conds(2),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
     
     %Short Split +
-    RPosi=expData.getAlignedField('procEMGData',conds(3),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
-    LPosi=expData.getAlignedField('procEMGData',conds(3),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
+    RPosi=expData.getAlignedField('procEMGData',conds(4),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
+    LPosi=expData.getAlignedField('procEMGData',conds(4),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
     
     %Short Split +
-    RNeg=expData.getAlignedField('procEMGData',conds(4),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
-    LNeg=expData.getAlignedField('procEMGData',conds(4),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
+    RNeg=expData.getAlignedField('procEMGData',conds(3),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
+    LNeg=expData.getAlignedField('procEMGData',conds(3),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
     
     %OG nimbus
     RBase=expData.getAlignedField('procEMGData',conds(5),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
@@ -168,7 +175,7 @@ for m=1:length(muscle)
         if late==1
 %             title('Late Phases')
             Nimbusoff.plot(fh,ph,condColors(1,:),[],0,[-49:0],prc,true);
-%             TMbase.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
+            TMbase.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
             Base.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
 %             Adaptation.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
             Post_Late.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);
