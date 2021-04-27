@@ -134,10 +134,10 @@ for i = 1:n_subjects
     ph=tight_subplot(1,4,[.03 .005],.04,.04);
     flip=true;
 
-    adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,1),refEp,flip); %Adaptation Steady State 
+    adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,3),refEpLate,flip); %OG base - Adapt SS 
     adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(2,:),fh,ph(1,2),refEpShortPos,flip); % baseline TM - EMG_split(+) 
-    adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(4,:),fh,ph(1,3),refEpTM,flip); %  EMG_split(+) - baseline TM
-    adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(7,:),fh,ph(1,4),refEpLate,flip); %OGafter = Adaptation_{SS} 
+    adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(4,:),fh,ph(1,1),refEpTM,flip); %  EMG_split(+) - baseline TM
+    adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpLate,flip); %OGafter = Adaptation_{SS} 
 %     [~,~,labels,dataE{1},dataRef{1}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
 %    
     
