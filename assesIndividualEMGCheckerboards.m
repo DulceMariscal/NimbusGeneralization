@@ -3,7 +3,7 @@
 % load('/Users/samirsherlekar/Desktop/emg/Data/normalizedYoungEmgData.mat');
 % load('C:\Users\dum5\Box\GeneralizationStudy Data\NormalizedFastYoungEMGData.mat')
 % sub={'YL02params'};
-sub={'NimG_BoyanAllMusclesparams'};
+sub={'NimbG_BoyanAllMusclesparams'};
 
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
 
