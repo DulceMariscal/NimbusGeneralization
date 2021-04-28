@@ -73,7 +73,7 @@ for i = 1:n_subjects
     extremaMatrixYoung(i,:,2) =  max(dataRef{1});
     
 end
-
+set(gcf,'color','w');
 %% Regressors 
 
 % baseline - EMG_split(+) 
@@ -81,7 +81,7 @@ end
 % Adapt - baseline
 % OGpost - ADapt SS
 
-sub={'NimG_BoyanAllMusclesparams'};
+sub={'NimbG_BoyanAllMusclesparams'};
 
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
 
@@ -103,7 +103,7 @@ n_subjects = 1;
 extremaMatrixYoung = NaN(n_subjects,n_muscles * 2,2);
 
 ep=defineEpocNimbusShoesRegressor('nanmean');
-refEp = defineReferenceEpoch('OGNimbus',ep);
+% refEp = defineReferenceEpoch('OGNimbus',ep);
 refEpAdaptLate = defineReferenceEpoch('Adaptation',ep);
 refEpShortPos=defineReferenceEpoch('SplitPos',ep);
 % refEpShortNeg=defineReferenceEpoch('SplitNeg',ep);
