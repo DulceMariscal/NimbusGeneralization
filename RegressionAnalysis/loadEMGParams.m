@@ -1,4 +1,4 @@
-function loadEMGParams_forRegression(groupName)
+function loadEMGParams(groupName)
 %% Aux vars:
 % matDataDir='../data/HPF30/';
 % loadName=[matDataDir 'groupedParams'];
