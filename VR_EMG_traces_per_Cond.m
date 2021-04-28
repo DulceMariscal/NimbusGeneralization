@@ -18,15 +18,11 @@ muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 
 lm=1:2:35;
 late=0;
 if late==1
-    %     condlegend={'No Nimbus','TM: Nimbus off 3',...
-    %         'OG Nimbus: Nimbus off','Adaptation',...
-    %         'Generalization Late','Washout Late'};
-    %     condlegend={'OGbase_{late}','TMbase_{late}','OGpost_{late}'};
     
-    condlegend={'OGbase_{late}','TMbaseVR_{late}','TMBase_{late}'};
+%     condlegend={'OGbase_{late}','TMbaseVR_{late}','TMBase_{late}'};
     
-%     condlegend={'OGbase_{late}','TMbaseVR_{late}','TMBase_{late}','Adaptation_{late}',...
-%         'OGpost_{late}','TMpost_{late}'};
+    condlegend={'OGbase_{late}','TMbaseVR_{late}','TMBase_{late}','Adaptation_{late}',...
+        'OGpost_{late}','TMpost_{late}'};
 %     
     
 else
@@ -175,15 +171,15 @@ for m=1:length(muscle)
             OGbase_late.plot(fh,ph,condColors(1,:),[],0,[-49:0],prc,true);
             TMbaseVR_late.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
             TMBase_late.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
-%             Adaptation_late.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
-%              if m==14 &&  l==2
-%              else
-%                 OGPost_Late.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);
-%                 TMpost_Late.plot(fh,ph,condColors(8,:),[],0,[-49:0],prc,true);
-%                 if m==14 &&  l==1
-%                legend(ll(end:-1:1),condlegend{:})
-%                 end
-%              end
+            Adaptation_late.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
+             if m==14 &&  l==2
+             else
+                OGPost_Late.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);
+                TMpost_Late.plot(fh,ph,condColors(8,:),[],0,[-49:0],prc,true);
+                if m==14 &&  l==1
+               legend(ll(end:-1:1),condlegend{:})
+                end
+             end
         else
             TMBase_late.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
             Pos.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
