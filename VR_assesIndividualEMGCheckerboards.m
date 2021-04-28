@@ -13,7 +13,6 @@ normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ss,s2);
 
 % muscleOrder={'TA','MG','SEMT','VL','RF'};
 muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'HIP'};
-% muscleOrder={'TA', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'HIP'};
 
 n_muscles = length(muscleOrder);
 
@@ -71,6 +70,9 @@ for i = 1:n_subjects
     
 end
 set(gcf,'color','w');
+
+[data,validStrides,allData]=getEpochData(adaptDataSubject,ep(1,:),newLabelPrefix);
+% [dataE,labels]=adaptDataSubject.getPrefixedEpochData(newLabelPrefix,ep,false);
 %% Regressors 
 
 % baseline - EMG_split(+) 
@@ -135,7 +137,7 @@ for i = 1:n_subjects
     adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(2,:),fh,ph(1,2),refEpShortPos,flip); % baseline TM - EMG_split(+) 
     adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(4,:),fh,ph(1,1),refEpTM,flip); %  EMG_split(-) - baseline TM
     adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,3),refEpLate,flip); %OG base - Adapt SS
-    adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpLate,flip); %OGafter = Adaptation_{SS} 
+    adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpLate,flip); %OGafter - Adaptation_{SS} 
 %     [~,~,labels,dataE{1},dataRef{1}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
 %    
     
