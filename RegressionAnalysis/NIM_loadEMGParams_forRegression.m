@@ -60,8 +60,8 @@ dataEMG=reshape(flipEMGdata(reshape(dataEMG,size(labels,1),size(labels,2),size(d
 % shortNames={'lB','eA','lA','lS','eP','ePS','veA','veP','veS','vePS','lP','e15A','e15P'};
 % longNames={'Base','early A','late A','Short','early P','early B','vEarly A','vEarly P','vShort','vEarly B','late P','early A15','early P15'};
 
-shortNames={'TMBl','Pos','Neg','OGlbase','SS','eP'};
-longNames={'TMbase','SplitPos','SplitNeg','OGNimbus','Adaptation','OGpostEarly'};
+shortNames={'OGbase','TMBl','Pos','Neg','OGlNim','SS','eP','lP','ePNIM'};
+longNames={'OGbase','TMbase','SplitPos','SplitNeg','OGNimbus','Adaptation','OGpostEarly','OGpostLate','NIMpostEarly'};
 for i=1:length(shortNames)
     aux=squeeze(dataEMG(:,strcmp(ep.Properties.ObsNames,longNames{i}),:));
     eval([shortNames{i} '=aux;']);
@@ -72,20 +72,24 @@ clear aux
 groupName='OG_NIM';
 % vars=[shortNames,strcat('SLA_',shortNames), {'age','labels'}];
 vars=[shortNames, {'age','labels'}];
-save([groupName 'EMGsummary'],vars{:})
+% save([groupName 'EMGsummary'],vars{:}
 % end
 
 %% Now that we have the data we can start doing the regression 
 subjIdx=1;
 muscleIdx=1:size(eP,1);
-tt=table(median(TMBl(muscleIdx,subjIdx),2), median(Pos(muscleIdx,subjIdx),2),...
-           median(Neg(muscleIdx,subjIdx),2),  median(OGlbase(muscleIdx,subjIdx),2),...
+tt=table(median(OGbase(muscleIdx,subjIdx),2),median(TMBl(muscleIdx,subjIdx),2),...
+           median(Pos(muscleIdx,subjIdx),2),...
+           median(Neg(muscleIdx,subjIdx),2),  median(OGlNim(muscleIdx,subjIdx),2),...
         median(SS(muscleIdx,subjIdx),2), median(eP(muscleIdx,subjIdx),2),...
+        median(lP(muscleIdx,subjIdx),2), median(ePNIM(muscleIdx,subjIdx),2),...
         median(TMBl(muscleIdx,subjIdx),2)-median(Pos(muscleIdx,subjIdx),2),...
         median(Neg(muscleIdx,subjIdx),2) - median(TMBl(muscleIdx,subjIdx),2),...
         median(OGlbase(muscleIdx,subjIdx),2) - median(SS(muscleIdx,subjIdx),2),...
         median(eP(muscleIdx,subjIdx),2) - median(SS(muscleIdx,subjIdx),2),...
-        'VariableNames',{'TMBl','Pos','Neg','OGlbase','SS','eP','TMBl_Pos','Neg_TMBl','OGb_SS','eP_SS'});
+         median(ePNIM(muscleIdx,subjIdx),2)- median(lP(muscleIdx,subjIdx),2),...
+        'VariableNames',{'OGbase','TMBl','Pos','Neg','OGlbase','SS','eP',...
+        'lP','ePNIM','TMBl_Pos','Neg_TMBl','OGb_SS','eP_SS','ePNIM_lP'});
 
 rob='off';
 modelFit=fitlm(tt,'eP_SS~TMBl_Pos+Neg_TMBl+OGb_SS-1','RobustOpts',rob)
@@ -94,6 +98,15 @@ learnS3bCI=modelFit.coefCI;
 r2S3b=uncenteredRsquared(modelFit);
 r2S3b=r2S3b.uncentered;
 disp(['Uncentered R^2=' num2str(r2S3b,3)])
+
+
+rob='off';
+modelFit2=fitlm(tt,'ePNIM_lP~TMBl_Pos+Neg_TMBl+OGb_SS-1','RobustOpts',rob)
+learnS3c=modelFit2.Coefficients.Estimate;
+learnS3cCI=modelFit2.coefCI;
+r2S3c=uncenteredRsquared(modelFit2);
+r2S3c=r2S3c.uncentered;
+disp(['Uncentered R^2=' num2str(r2S3c,3)])
 
 
 % modelFit2=fitlm(tt,'eP_SS~TMBl_Pos+Neg+OGb_SS-1','RobustOpts',rob)
