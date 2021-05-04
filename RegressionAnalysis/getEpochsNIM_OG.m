@@ -1,14 +1,17 @@
 function ep=getEpochsNIM_OG(nantype)
 
-names={'TMbase','SplitPos','SplitNeg','OGNimbus','Adaptation','OGpostEarly'};
 
-ep=defineEpochs(names,...
-                {'TM base','Pos Short','Neg Short',...
-                'NIM Base','NIM Adaptation','OG post'},...
-                [-40  20 20 -40  -40 20],...
-                [0 1,1,0,0,1],...
-                [5,0,0,5,5,0],...
-                nantype);
+names={'OGbase','TMbase','SplitPos','SplitNeg','OGNimbus','Adaptation','OGpostEarly','OGpostLate','NIMpostEarly'};
+
+cond= {'OG base','TM base','Pos Short','Neg Short','NIM Base','NIM Adaptation','OG post','OG post','NIM Post'};
+
+earlyLate=[-40 -40  20 20 -40  -40 20 -40 20];
+
+SpikEarly=[0,0, 1,1,0,0,1,0, 1];
+
+SkipLate=[5,5,0,0,5,5,0,5,0];
+
+ep=defineEpochs(names, cond,earlyLate,SpikEarly,SkipLate,nantype);
             
             
 % summ='nanmedian'; 
