@@ -217,7 +217,7 @@ Rsquared = fitTrans2NoConst.Rsquared
 fitTrans2=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt')%exclude constant
 
 resDir = 'RegModelResults/';
-if ~exist(resDir)
+if not(isfolder(resDir))
     mkdir(resDir)
 end
 
