@@ -1,6 +1,11 @@
 % clear; close all;
-subID = 'CVROG_01';
-sub={[subID 'params']};
+% subID = 'CVROG_01';
+% sub={[subID 'params']};
+subID = {'VROG_02'}
+sub={};
+for i = 1 : length(subID)
+    sub{i} = [subID{i} 'params'];
+end
 
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
 
@@ -74,7 +79,9 @@ set(gcf,'color','w');
 % [data,validStrides,allData]=getEpochData(adaptDataSubject,ep(1,:),newLabelPrefix);
 % [dataE,labels]=adaptDataSubject.getPrefixedEpochData(newLabelPrefix,ep,false);
 
-%% Regressor V2 - Update from disucssion on Tuesday MAy 4, 2021 - Refer to OneNote for naming details
+%% Regressor V2, prepare data for regressor checkerboards and regression model
+% - Update from disucssion on Tuesday MAy 4, 2021
+% - Refer to OneNote for naming details
 
 % Adapt VR- baseline VR
 % OG base - baseline VR 
@@ -99,9 +106,6 @@ muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', '
 n_muscles = length(muscleOrder);
 useLateAdaptAsBaseline=false;
 
-n_subjects = 1;
-extremaMatrixYoung = NaN(n_subjects,n_muscles * 2,2);
-
 ep=defineEpocVR_OG_UpdateV1('nanmean');
 refEpAdaptLate = defineReferenceEpoch('Adaptation',ep);
 refEpOGBase=defineReferenceEpoch('OGbase',ep);
@@ -122,9 +126,11 @@ normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
 
 newLabelPrefix = regexprep(newLabelPrefix,'_s','s');
 
+%% plot checkerboard per subject
+n_subjects = length(subID);
+extremaMatrixYoung = NaN(n_subjects,n_muscles * 2,2);
 
 for i = 1:n_subjects
-    
 
     adaptDataSubject = normalizedTMFullAbrupt.adaptData{1, i}; 
 
@@ -158,15 +164,50 @@ for i = 1:n_subjects
 end
 set(gcf,'color','w');
 
-%% Run regression analysis V2 - single subject
+%% plot checkerboards per group
+if length(subID) > 1
+    fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
+    ph=tight_subplot(1,5,[.03 .005],.04,.04);
+    flip=true;
+
+    Data = {}; %in order: adapt, dataEnvSwitch, dataTaskSwitch, dataTrans1, dataTrans2
+    [~,~,labels,Data{1},dataRef2]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
+    %all labels should be the same, no need to save again.
+    [~,~,~,Data{2},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(5,:),fh,ph(1,2),refEpOGBase,flip); % TM base VR - OG base, env switching
+    [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,3),refEpAdaptLate,flip); % baseline TM - Adapt SS, task switching (within env)
+    [~,~,~,Data{4},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS}, transition 1 
+    [~,~,~,Data{5},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %TM post VR early - OG post late, transition 2
+    %     [~,~,labels,dataE{1},dataRef{1}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
+
+    set(ph(:,1),'CLim',[-1 1]);
+    %     set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*2);
+    set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*1.5);
+    set(ph,'FontSize',8)
+    pos=get(ph(1,end),'Position');
+    axes(ph(1,end))
+    colorbar
+    set(ph(1,end),'Position',pos);
+
+    set(gcf,'color','w');
+end
+%% Prepare data for regression analysis V2
 %handling nan value?
 %normalize data? 
 clc;
-for i = 1:size(Data,2)
-    Data{i} = reshape(Data{i}, [],1); %make it a column vector
+if length(subID) == 1
+    for i = 1:size(Data,2)
+        Data{i} = reshape(Data{i}, [],1); %make it a column vector
+    end
+else %group data, take the median
+    rawData = Data;
+    for i = 1:size(Data,2)
+        d = nanmedian(Data{i}, 4);
+        Data{i} = reshape(d, [],1); %make it a column vector
+    end
 end
-tableData=table(Data{1},Data{2},Data{3},Data{4},Data{5},'VariableNames',{'Adapt', 'EnvSwitch', 'TaskSwitch', 'Trans1', 'Trans2'});
 
+%% Run regression analysis V2
+tableData=table(Data{1},Data{2},Data{3},Data{4},Data{5},'VariableNames',{'Adapt', 'EnvSwitch', 'TaskSwitch', 'Trans1', 'Trans2'});
 fitTrans1NoConst=fitlm(tableData,'Trans1 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
 Rsquared = fitTrans1NoConst.Rsquared
 fitTrans1=fitlm(tableData,'Trans1 ~ TaskSwitch+EnvSwitch+Adapt')%exclude constant
@@ -180,7 +221,11 @@ if ~exist(resDir)
     mkdir(resDir)
 end
 
-save([resDir subID 'models'], 'fitTrans1NoConst','fitTrans1','fitTrans2NoConst','fitTrans2')
+if length(subID) == 1
+    save([resDir subID 'models'], 'fitTrans1NoConst','fitTrans1','fitTrans2NoConst','fitTrans2')
+else
+    save([resDir 'VRGroup' 'models'], 'fitTrans1NoConst','fitTrans1','fitTrans2NoConst','fitTrans2')
+end
 %% Regressors V1 - 
 
 % baseline - EMG_split(+) 
