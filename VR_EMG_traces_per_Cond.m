@@ -4,9 +4,9 @@
 
 %% Align it
 
-conds={'OG base','TM tied 1','Left Split','Right Split',...
-    'TM base',...
-    'Adaptation','OG post','Post Adaptation'};
+conds={'OG base','TM base','Pos Short','Neg Short',...
+    'TM tied 1',...
+    'Adaptation','OG post','TM post'};
 
 
 events={'RHS','LTO','LHS','RTO'};
@@ -16,12 +16,12 @@ alignmentLengths=[16,32,16,32];
 muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU','HIP'};
 % muscle={'HIP'};
 lm=1:2:35;
-late=0;
+late=1;
 if late==1
     
 %     condlegend={'OGbase_{late}','TMbaseVR_{late}','TMBase_{late}'};
     
-    condlegend={'OGbase_{late}','TMbaseVR_{late}','TMBase_{late}','Adaptation_{late}',...
+    condlegend={'OGbase_{late}','TMbaseVR_{late}','TMtied_{late}','Adaptation_{late}',...
         'OGpost_{late}','TMpost_{late}'};
 %     
     
