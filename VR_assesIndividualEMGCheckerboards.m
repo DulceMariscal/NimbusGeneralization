@@ -1,6 +1,6 @@
 % clear; close all;
 subID = 'CVROG_01';
-sub={['data/' subID 'params']};
+sub={[subID 'params']};
 
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
 
