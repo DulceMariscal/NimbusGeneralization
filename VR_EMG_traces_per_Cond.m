@@ -4,9 +4,9 @@
 
 %% Align it
 
-conds={'OG base','TM base','Left Fast Split','Right Fast Split',...
-    'TM tied 1',...
-    'Adaptation','OG post','TM post'};
+conds={'OG base','TM tied 1','Left Split','Right Split',...
+    'TM base',...
+    'Adaptation','OG post','Post Adaptation'};
 
 
 events={'RHS','LTO','LHS','RTO'};
@@ -26,7 +26,7 @@ if late==1
 %     
     
 else
-    condlegend={'TMbase_{late}','Pos Short','Neg Short',...
+    condlegend={'TMbaseVR_{late}','Pos Short','Neg Short',...
         'OGpost_{early}','TMpost_{early}'};
     
 end
@@ -104,12 +104,12 @@ for m=1:length(muscle)
                 TMBase_late=LTMBase.getPartialStridesAsATS(find(LTMBase.Data(end-40:end)));
                 Adaptation_late=LAdap.getPartialStridesAsATS(find(LAdap.Data(end-40:end)));
                 
-                if m==14
-                    
-                else
+%                 if m==14
+%                     
+%                 else
                     OGPost_Late=LOGPost.getPartialStridesAsATS(find(LOGPost.Data(end-40:end)));
                     TMpost_Late=LTMPost.getPartialStridesAsATS(find(LTMPost.Data(end-40:end)));
-                end
+%                 end
                
                 
                 
@@ -128,9 +128,8 @@ for m=1:length(muscle)
                 tit=['L' muscle{m}];
                 
         end
-        %     allmuscle=EMG.getPartialStridesAsATS(1:size(EMG.Data,3))
         
-        norm2=nanmean(nanmax(squeeze(TMBase_late.Data)));
+        norm2=nanmean(nanmax(squeeze(TMbaseVR_late.Data)));
         
         %Late
         OGbase_late.Data=bsxfun(@rdivide,OGbase_late.Data,norm2);
@@ -145,7 +144,7 @@ for m=1:length(muscle)
         Neg.Data=bsxfun(@rdivide,Neg.Data,norm2);
         OGPost_early.Data=bsxfun(@rdivide,OGPost_early.Data,norm2);
         TMPost_early.Data=bsxfun(@rdivide,TMPost_early.Data,norm2);
-        
+%         
         condColors=colorOrder;
         % ph=[];
         ph1=[];
@@ -171,17 +170,17 @@ for m=1:length(muscle)
             OGbase_late.plot(fh,ph,condColors(1,:),[],0,[-49:0],prc,true);
             TMbaseVR_late.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
             TMBase_late.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
-            Adaptation_late.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
-             if m==14 &&  l==2
-             else
+%             Adaptation_late.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
+% %              if m==14 &&  l==2
+% %              else
                 OGPost_Late.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);
                 TMpost_Late.plot(fh,ph,condColors(8,:),[],0,[-49:0],prc,true);
-                if m==14 &&  l==1
-               legend(ll(end:-1:1),condlegend{:})
-                end
-             end
+%                 if m==14 &&  l==1
+%                legend(ll(end:-1:1),condlegend{:})
+%                 end
+%              end
         else
-            TMBase_late.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
+            TMbaseVR_late.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
             Pos.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
             Neg.plot(fh,ph,condColors(4,:),[],0,[-49:0],prc,true);
             OGPost_early.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);
@@ -204,3 +203,4 @@ else
 end
 legend(ll(end:-1:1),condlegend{:})
 % end%%
+set(gcf,'color','w');
