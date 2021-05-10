@@ -132,7 +132,7 @@ for i = 1:n_subjects
     ph=tight_subplot(1,5,[.03 .005],.04,.04);
     flip=true;
     
-    Data = {}; %in order: dataOnMius, dataEnvSwitch, dataTaskSwitch, dataTrans1, dataTrans2
+    Data = {}; %in order: adapt, dataEnvSwitch, dataTaskSwitch, dataTrans1, dataTrans2
     [~,~,labels,Data{1},dataRef2]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
     %all labels should be the same, no need to save again.
     [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(5,:),fh,ph(1,2),refEpOGBase,flip); % TM base VR - OG base, env switching
