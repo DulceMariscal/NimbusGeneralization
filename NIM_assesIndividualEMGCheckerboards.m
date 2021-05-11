@@ -3,7 +3,8 @@
 % load('/Users/samirsherlekar/Desktop/emg/Data/normalizedYoungEmgData.mat');
 % load('C:\Users\dum5\Box\GeneralizationStudy Data\NormalizedFastYoungEMGData.mat')
 % sub={'YL02params'};
-sub={'NimbG_BoyanAllMusclesparams'};
+subID = 'NimbG_BoyanAllMuscles';
+sub={[subID 'params']};
 
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
 
@@ -135,17 +136,17 @@ for i = 1:n_subjects
     fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
     ph=tight_subplot(1,5,[.03 .005],.04,.04);
     flip=true;
+    
+    Data = {}; %in order: adapt, dataEnvSwitch, dataTaskSwitch, dataTrans1, dataTrans2
+    %all labels should be the same, no need to save again.
+    [~,~,labels,Data{1},dataRef2]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base with Nimbus, adaptation
+    [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(5,:),fh,ph(1,2),refEpOGBase,flip); %  base - OG base, env switching
+    [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,3),refEpAdaptLate,flip); % baseline Nimbus - Adapt SS, task switching (within env)
+    [~,~,~,Data{4},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS} , transition 1
+    [~,~,~,Data{5},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %Nimbus post early - OG post late, transition 2
+%     [~,~,labels,dataE{1},dataRef{1}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:    
+    
 
-    [~,~,labels,dataE,dataRef2]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR
-    adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(5,:),fh,ph(1,2),refEpOGBase,flip); % TM base VR - OG base 
-    adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,3),refEpAdaptLate,flip); % baseline TM - Adapt SS
-    adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS} 
-    adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %TM post VR early - OG post late 
-%     [~,~,labels,dataE{1},dataRef{1}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
-%    
-%    
-    
-    
     set(ph(:,1),'CLim',[-1 1]);
 %     set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*2);
     set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*1.5);
@@ -163,8 +164,29 @@ for i = 1:n_subjects
 end
 set(gcf,'color','w');
 
+%% Run regression analysis V2 - single subject
+%handling nan value?
+%normalize data? 
+clc;
+for i = 1:size(Data,2)
+    Data{i} = reshape(Data{i}, [],1); %make it a column vector
+end
+tableData=table(Data{1},Data{2},Data{3},Data{4},Data{5},'VariableNames',{'Adapt', 'EnvSwitch', 'TaskSwitch', 'Trans1', 'Trans2'});
 
+fitTrans1NoConst=fitlm(tableData,'Trans1 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
+Rsquared = fitTrans1NoConst.Rsquared
+fitTrans1=fitlm(tableData,'Trans1 ~ TaskSwitch+EnvSwitch+Adapt')%exclude constant
 
+fitTrans2NoConst=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
+Rsquared = fitTrans2NoConst.Rsquared
+fitTrans2=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt')%exclude constant
+
+resDir = 'RegModelResults/';
+if not(isfolder(resDir))
+    mkdir(resDir)
+end
+
+save([resDir subID 'models'], 'fitTrans1NoConst','fitTrans1','fitTrans2NoConst','fitTrans2')
 
 %% Regressors 
 
