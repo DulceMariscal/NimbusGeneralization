@@ -1,4 +1,4 @@
-%% put all regression data into 1 matrix
+%% put all regression data into 1 matrix - only need to run it once, the results are saved
 coeff_trans1 = {};
 coeff_trans2 = {};
 subjIDs = {'VROG_03','VROG_02','VrG_Devon','NimbG_BoyanAllMuscles','CVROG_01'};
