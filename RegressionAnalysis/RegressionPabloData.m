@@ -10,11 +10,17 @@ controlDataTemp = [nanmedian(data{1,1}.deltaObs_Reshaped,2), -nanmedian(data{1,1
 % shortNames{'lB','eA','lA','lS','eP','ePS','veA','veP','veS','vePS','lP','e15A','e15P'};
 % longNames={'Base','early A','late A','Short','early P','early B','vEarly A','vEarly P','vShort','vEarly B','late P','early A15','early P15'};
 % v = very early
+
+%get this script's folder, data loading and saving would be based on the current script's location
+scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
+cd(scriptDir);
+load('../data/pablosData/OldAdultsData_WO_ADMEMGsummary.mat')
+
 eAT = fftshift(eA,1); 
 tableData = table(nanmedian(eP,2)-nanmedian(lA,2), -nanmedian(eA,2), nanmedian(eP,2), nanmedian(lA,2),nanmedian(eAT,2),...
         'VariableNames',{'eP_lA','eA','eP','lA','eAT'});
 fit = fitlm(tableData,'eP_lA ~ eA + eAT -1')    
-writetable(tableData, 'groupRegData.csv') %for python
+% writetable(tableData, 'groupRegData.csv') %for python
 
 %% fit the new model
 %deltaEMGminuts, emgbase - emgSS
@@ -94,9 +100,9 @@ set(gca,'FontSize',18);
 
 % axis([-.7 1.55 -.5 1.5]) 
 title('Regression analysis of Old Data: Trans1 ~ Adapt + TaskSwitch -1')
-saveas(fh, 'results/newModelBetas_defaultAxis.png')
+saveas(fh, [scriptDir '/RegModelResults/AllSubjectsOrGroupResults/pabloData_newModelBetas_defaultAxis.png'])
 
-%% correlation matrix plot
+%% correlation matrix plot - not in use, handled in python
 vars = [tableData.('eP_lA'),tableData.('eA'),tableData.('eAT'),tableData.('lA')];
 varCorr = corrcoef(vars);
 imagesc(varCorr); % plot the matrix
@@ -108,6 +114,3 @@ title('Your Title Here', 'FontSize', 14); % set title
 colormap('jet'); % set the colorscheme
 colorbar; % enable colorbar
 
-
-
-%% 

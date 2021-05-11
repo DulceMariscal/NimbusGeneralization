@@ -181,7 +181,8 @@ fitTrans2NoConst=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclud
 Rsquared = fitTrans2NoConst.Rsquared
 fitTrans2=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt')%exclude constant
 
-resDir = 'RegModelResults/';
+scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
+resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];
 if not(isfolder(resDir))
     mkdir(resDir)
 end

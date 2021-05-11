@@ -1,7 +1,6 @@
+%% Load data and Plot checkerboard for all conditions.
 % clear; close all;
-% subID = 'CVROG_01';
-% sub={[subID 'params']};
-subID = {'VROG_02'}
+subID = {'VROG_02'};
 sub={};
 for i = 1 : length(subID)
     sub{i} = [subID{i} 'params'];
@@ -86,9 +85,6 @@ set(gcf,'color','w');
 % Adapt VR- baseline VR
 % OG base - baseline VR 
 % baseline - EMG_split(-)
-
-
-% sub={'VROG_02params'};
 
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
 
@@ -216,13 +212,14 @@ fitTrans2NoConst=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclud
 Rsquared = fitTrans2NoConst.Rsquared
 fitTrans2=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt')%exclude constant
 
-resDir = 'RegModelResults/';
+scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
+resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];
 if not(isfolder(resDir))
     mkdir(resDir)
 end
 
 if length(subID) == 1
-    save([resDir subID 'models'], 'fitTrans1NoConst','fitTrans1','fitTrans2NoConst','fitTrans2')
+    save([resDir subID{1} 'models'], 'fitTrans1NoConst','fitTrans1','fitTrans2NoConst','fitTrans2')
 else
     save([resDir 'VRGroup' 'models'], 'fitTrans1NoConst','fitTrans1','fitTrans2NoConst','fitTrans2')
 end
