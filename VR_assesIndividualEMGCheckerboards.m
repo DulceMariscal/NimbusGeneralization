@@ -1,6 +1,6 @@
 %% Load data and Plot checkerboard for all conditions.
 % clear; close all;
-subID = {'VROG_02'};
+subID = {'CVROG_02'};
 sub={};
 for i = 1 : length(subID)
     sub{i} = [subID{i} 'params'];
@@ -219,7 +219,7 @@ if not(isfolder(resDir))
 end
 
 if length(subID) == 1
-    save([resDir subID{1} 'models'], 'fitTrans1NoConst','fitTrans1','fitTrans2NoConst','fitTrans2')
+    save([resDir, subID{1}, 'models'], 'fitTrans1NoConst','fitTrans1','fitTrans2NoConst','fitTrans2')
 else
     save([resDir 'VRGroup' 'models'], 'fitTrans1NoConst','fitTrans1','fitTrans2NoConst','fitTrans2')
 end
