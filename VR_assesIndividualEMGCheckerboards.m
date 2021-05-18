@@ -1,11 +1,14 @@
 %% Load data and Plot checkerboard for all conditions.
 % clear; close all;
-subID = {'CVROG_02'};
+subID = {'CVROG_01','CVROG_02'};
 sub={};
+scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
+
 for i = 1 : length(subID)
     sub{i} = [subID{i} 'params'];
 end
 
+%% plot all relevant epochs
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
 
 ss =normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
@@ -21,7 +24,7 @@ muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', '
 n_muscles = length(muscleOrder);
 
 
-n_subjects = 1;
+n_subjects = length(subID);
 extremaMatrixYoung = NaN(n_subjects,n_muscles * 2,2);
 
 
@@ -102,8 +105,23 @@ muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', '
 n_muscles = length(muscleOrder);
 useLateAdaptAsBaseline=false;
 
-ep=defineEpocVR_OG_UpdateV1('nanmean');
-refEpAdaptLate = defineReferenceEpoch('Adaptation',ep);
+ver = 2; usefft = 0; normalizeData = 0; flipSign = 1;
+if flipSign
+    if ver == 1
+        ep=defineEpocVR_OG_UpdateV1_flipSign('nanmean');
+    else
+        ep=defineEpocVR_OG_UpdateV2_flipSign('nanmean');
+    end
+    refEpAdaptLate = defineReferenceEpoch('Task_{Switch}',ep);
+else
+    if ver == 1
+        ep=defineEpocVR_OG_UpdateV1('nanmean');
+    else
+        ep=defineEpocVR_OG_UpdateV2('nanmean');
+    end
+    refEpAdaptLate = defineReferenceEpoch('Adaptation',ep);
+end
+
 refEpOGBase=defineReferenceEpoch('OGbase',ep);
 refEpOGpost= defineReferenceEpoch('OGpost_{Late}',ep);
 refEp= defineReferenceEpoch('TMbase',ep);
@@ -123,8 +141,9 @@ normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
 newLabelPrefix = regexprep(newLabelPrefix,'_s','s');
 
 %% plot checkerboard per subject
+close all;
 n_subjects = length(subID);
-extremaMatrixYoung = NaN(n_subjects,n_muscles * 2,2);
+% extremaMatrixYoung = NaN(n_subjects,n_muscles * 2,2);
 
 for i = 1:n_subjects
 
@@ -135,10 +154,18 @@ for i = 1:n_subjects
     flip=true;
     
     Data = {}; %in order: adapt, dataEnvSwitch, dataTaskSwitch, dataTrans1, dataTrans2
-    [~,~,labels,Data{1},dataRef2]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
+    if usefft
+        [~,~,labels,Data{1},dataRef2]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(4,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
+    else
+        [~,~,labels,Data{1},dataRef2]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
+    end
     %all labels should be the same, no need to save again.
     [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(5,:),fh,ph(1,2),refEpOGBase,flip); % TM base VR - OG base, env switching
-    [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,3),refEpAdaptLate,flip); % baseline TM - Adapt SS, task switching (within env)
+    if flipSign
+        [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(7,:),fh,ph(1,3),ep(6,:),flip); % Adapt SS - baseline TM, task switching (within env)
+    else
+        [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,3),refEpAdaptLate,flip); % baseline TM - Adapt SS, task switching (within env)
+    end
     [~,~,~,Data{4},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS}, transition 1 
     [~,~,~,Data{5},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %TM post VR early - OG post late, transition 2
 %     [~,~,labels,dataE{1},dataRef{1}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
@@ -154,9 +181,9 @@ for i = 1:n_subjects
     
    
     
-    extremaMatrixYoung(i,:,1) =  min(dataRef2);
-    extremaMatrixYoung(i,:,2) =  max(dataRef2);
-    
+%     extremaMatrixYoung(i,:,1) =  min(dataRef2);
+%     extremaMatrixYoung(i,:,2) =  max(dataRef2);
+    saveas(fh, [scriptDir '/RegressionAnalysis/RegModelResults/' subID{i} '_Checkerboard_ver' num2str(ver) num2str(usefft) num2str(normalizeData) num2str(flipSign)  '.png'])
 end
 set(gcf,'color','w');
 
@@ -167,11 +194,19 @@ if length(subID) > 1
     flip=true;
 
     Data = {}; %in order: adapt, dataEnvSwitch, dataTaskSwitch, dataTrans1, dataTrans2
-    [~,~,labels,Data{1},dataRef2]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
+    if usefft
+        [~,~,labels,Data{1},dataRef2]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(4,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
+    else
+        [~,~,labels,Data{1},dataRef2]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
+    end
     %all labels should be the same, no need to save again.
     [~,~,~,Data{2},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(5,:),fh,ph(1,2),refEpOGBase,flip); % TM base VR - OG base, env switching
-    [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,3),refEpAdaptLate,flip); % baseline TM - Adapt SS, task switching (within env)
-    [~,~,~,Data{4},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS}, transition 1 
+    if flipSign
+        [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(7,:),fh,ph(1,3),ep(6,:),flip); % Adapt SS - baseline TM, task switching (within env)
+    else
+        [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,3),refEpAdaptLate,flip); % baseline TM - Adapt SS, task switching (within env)
+    end
+    [~,~,~,Data{4},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS}, transition 1
     [~,~,~,Data{5},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %TM post VR early - OG post late, transition 2
     %     [~,~,labels,dataE{1},dataRef{1}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
 
@@ -186,6 +221,7 @@ if length(subID) > 1
 
     set(gcf,'color','w');
 end
+saveas(fh, [scriptDir '/RegressionAnalysis/RegModelResults/AllSubjectsOrGroupResults/' 'ControlGroup_Checkerboard_ver' num2str(ver) num2str(usefft) num2str(normalizeData) num2str(flipSign) '.png'])
 %% Prepare data for regression analysis V2
 %handling nan value?
 %normalize data? 
@@ -202,15 +238,28 @@ else %group data, take the median
     end
 end
 
+if usefft %do fft - run only once
+    Data{size(Data,2) + 1} = Data{1}; %store the current on to the last
+    Data{1} = fftshift(Data{1},1);
+end
+%% 
+normalizeData
+if normalizeData
+    DataOriginal = Data;
+    for i = 1:size(Data,2)
+        Data{i} = Data{i}/norm(Data{i});
+    end
+end
+
 %% Run regression analysis V2
 tableData=table(Data{1},Data{2},Data{3},Data{4},Data{5},'VariableNames',{'Adapt', 'EnvSwitch', 'TaskSwitch', 'Trans1', 'Trans2'});
 fitTrans1NoConst=fitlm(tableData,'Trans1 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
 Rsquared = fitTrans1NoConst.Rsquared
-fitTrans1=fitlm(tableData,'Trans1 ~ TaskSwitch+EnvSwitch+Adapt')%exclude constant
+
+fprintf('\n\n\n')
 
 fitTrans2NoConst=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
 Rsquared = fitTrans2NoConst.Rsquared
-fitTrans2=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt')%exclude constant
 
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];
@@ -219,9 +268,12 @@ if not(isfolder(resDir))
 end
 
 if length(subID) == 1
-    save([resDir, subID{1}, 'models'], 'fitTrans1NoConst','fitTrans1','fitTrans2NoConst','fitTrans2')
+    save([resDir, subID{1}, 'models'], 'fitTrans1NoConst','fitTrans2NoConst')
 else
-    save([resDir 'VRGroup' 'models'], 'fitTrans1NoConst','fitTrans1','fitTrans2NoConst','fitTrans2')
+    %version convention: first digit: use first or last stride, 2nd digit:
+    %use fft or not, 3rd digit: normalize or not, i.e., ver_101 = use first
+    %20 strides, no fft and normalized data
+    save([resDir 'AllSubjectsOrGroupResults/ControlGroup' 'models_ver' num2str(ver) num2str(usefft) num2str(normalizeData) num2str(flipSign)  ], 'fitTrans1NoConst','fitTrans2NoConst')
 end
 %% Regressors V1 - 
 
