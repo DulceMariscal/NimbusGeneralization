@@ -2,7 +2,7 @@
 %% Load data
 % load('.../GYAAT_01.mat');
 
-%% Loading data for Boyan 
+%% Loading data for Boyan
 % we need to load to expData files due to the problems with sensor 8 box 1
 % after trial 1
 
@@ -11,13 +11,9 @@
 % load('NimbG_Boyan.mat')
 
 %% Align it
-% conds={'TM Base','Adap','Post adapt','Shor Split'};
-% conds={'OG base: no Nimbus','TM Nimbus: Nimbus off 3','Short Split +',...
-%     'Short Split -','OG nimbus: Nimbus off','Adaptation',...
-%     'OG post: No nimbus','Washout: Nimbus off'};
 
-conds={'OG Base','TM Base 3','Left Split',...
-    'Right Split','NIM Base','NIM Adaptation',...
+conds={'OG base','TM Base','Pos short',...
+    'Neg Short','NIM Base','Adaptation',...
     'OG Post','NIM Post'};
 
 % condlegend={'TM base','Early Adapt','Late Adapt','Early Post','Late Post','Short Pos','Short Neg'};
@@ -25,21 +21,19 @@ condlegend=conds;
 events={'RHS','LTO','LHS','RTO'};
 % condlegend={'Early Adapt','Short Pos','Short Neg'};
 alignmentLengths=[16,32,16,32];
-% muscle={'MG','RF','VL','SEMT','TA'};
-% muscle={'MG','LG','PER'};
 muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU','HIP'};
-% muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'ADM'};
-% muscle={'TA', 'PER', 'SOL', 'LG','MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF'};
+
 lm=1:2:35;
-late=1;
+late=0;
+baselate=1;
 if late==1
-%     condlegend={'No Nimbus','TM: Nimbus off 3',...
-%         'OG Nimbus: Nimbus off','Adaptation',...
-%         'Generalization Late','Washout Late'};
-    condlegend={'OGbase_{late}','TMbase3','NIMbase_{late}','OGpost_{late}'};
-    
-%     condlegend={'OGbase_{late}','TMbase3_{late}','NIMbase_{late}','Adaptation_{late}',...
-%         'OGpost_{late}','NIMpost_{late}'};
+    if baselate==1
+        
+        condlegend={'OGbase_{late}','TMbase3','NIMbase_{late}','OGpost_{late}'};
+    else
+        condlegend={'OGbase_{late}','TMbase3_{late}','NIMbase_{late}','Adaptation_{late}',...
+            'OGpost_{late}','NIMpost_{late}'};
+    end
 else
     condlegend={'OGbase','Pos Short','Neg Short',...
         'OG post','NIM post'};
@@ -52,10 +46,10 @@ fh=figure('Units','Normalized');
 for m=1:length(muscle)
     
     % OG base: no Nimbus
-%     load('NimbG_Boyan_RPER.mat')
-    RBaseoff=expData2.getAlignedField('procEMGData',conds(1),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
-    LBaseoff=expData2.getAlignedField('procEMGData',conds(1),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
-%     load('NimG_Boyan.mat')
+    %     load('NimbG_Boyan_RPER.mat')
+    RBaseoff=expData.getAlignedField('procEMGData',conds(1),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
+    LBaseoff=expData.getAlignedField('procEMGData',conds(1),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
+    %     load('NimG_Boyan.mat')
     % TM Nimbus: Nimbus off
     RTMBaseoff=expData.getAlignedField('procEMGData',conds(2),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
     LTMBaseoff=expData.getAlignedField('procEMGData',conds(2),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
@@ -173,16 +167,22 @@ for m=1:length(muscle)
         
         
         if late==1
-%             title('Late Phases')
-            Nimbusoff.plot(fh,ph,condColors(1,:),[],0,[-49:0],prc,true);
-            TMbase.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
-            Base.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
-%             Adaptation.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
-            Post_Late.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);
-%             Washout_Late.plot(fh,ph,condColors(8,:),[],0,[-49:0],prc,true);
+            %             title('Late Phases')
+            if baselate==1
+                Nimbusoff.plot(fh,ph,condColors(1,:),[],0,[-49:0],prc,true);
+                TMbase.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
+                Base.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
+            else
+                Nimbusoff.plot(fh,ph,condColors(1,:),[],0,[-49:0],prc,true);
+                TMbase.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
+                Base.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
+                Adaptation.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
+                Post_Late.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);
+                Washout_Late.plot(fh,ph,condColors(8,:),[],0,[-49:0],prc,true);
+            end
         else
             %             fh2=figure('Units','Normalized');
-%             title('Early Phases')
+            %             title('Early Phases')
             Base.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
             Pos.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
             Neg.plot(fh,ph,condColors(4,:),[],0,[-49:0],prc,true);
