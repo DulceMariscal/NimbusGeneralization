@@ -3,7 +3,7 @@
 % load('/Users/samirsherlekar/Desktop/emg/Data/normalizedYoungEmgData.mat');
 % load('C:\Users\dum5\Box\GeneralizationStudy Data\NormalizedFastYoungEMGData.mat')
 % sub={'YL02params'};
-subID = 'NimbG_BoyanAllMuscles';
+subID = 'NTS_01';
 sub={[subID 'params']};
 
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
@@ -84,7 +84,7 @@ set(gcf,'color','w');
 % OG base - baseline VR 
 % baseline - EMG_split(-) 
 
-sub={'NimbG_BoyanAllMusclesparams'};
+% sub={'NimbG_BoyanAllMusclesparams'};
 
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
 
