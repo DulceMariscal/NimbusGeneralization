@@ -1,4 +1,4 @@
-function [eps] = defineEpocNIM_OG_UpdateV1(nantype)
+function [eps] = defineEpocNIM_OG_UpdateV2(nantype)
 
 
 names={'OGbase','TMbase','\DeltaEMG_{on(-)}','SplitPos (to fft)','Env_{Switch}','Task_{Switch}',...

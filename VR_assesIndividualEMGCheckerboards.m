@@ -1,6 +1,6 @@
 %% Load data and Plot checkerboard for all conditions.
 clear; close all; clc;
-subID = {'VROG_02','VROG_03','VrG_Devon'};
+subID = {'CTR_01'};
 sub={};
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 
@@ -78,6 +78,8 @@ for i = 1:n_subjects
 end
 set(gcf,'color','w');
 
+saveas(fh, [scriptDir '/RegressionAnalysis/RegModelResults/' subID{i} '_AllEpochCheckerBoard.png']) 
+
 % [data,validStrides,allData]=getEpochData(adaptDataSubject,ep(1,:),newLabelPrefix);
 % [dataE,labels]=adaptDataSubject.getPrefixedEpochData(newLabelPrefix,ep,false);
 
@@ -105,7 +107,7 @@ muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', '
 n_muscles = length(muscleOrder);
 useLateAdaptAsBaseline=false;
 
-ver = 1; usefft = 0; normalizeData = 1; flipSign = 1;
+ver = 1; usefft = 0; normalizeData = 0; flipSign = 1;
 if flipSign
     if ver == 1
         ep=defineEpocVR_OG_UpdateV1_flipSign('nanmean');

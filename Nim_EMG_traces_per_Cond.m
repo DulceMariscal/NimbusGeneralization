@@ -1,6 +1,10 @@
 %%Traces from example subject to show how data is summarized
 %% Load data
+% clear all; close all; clc
 % load('.../GYAAT_01.mat');
+subID = 'NTS_03';
+scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
+load([scriptDir '/data/' subID])
 
 %% Loading data for Boyan
 % we need to load to expData files due to the problems with sensor 8 box 1
@@ -10,6 +14,10 @@
 % expData2=expData;
 % load('NimbG_Boyan.mat')
 
+%% Set period to plot
+late=0;
+baselate=0;
+missing = [];
 %% Align it
 
 conds={'OG base','TM Base','Pos short',...
@@ -24,11 +32,8 @@ alignmentLengths=[16,32,16,32];
 muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU','HIP'};
 
 lm=1:2:35;
-late=0;
-baselate=1;
 if late==1
     if baselate==1
-        
         condlegend={'OGbase_{late}','TMbase3','NIMbase_{late}','OGpost_{late}'};
     else
         condlegend={'OGbase_{late}','TMbase3_{late}','NIMbase_{late}','Adaptation_{late}',...
@@ -78,7 +83,7 @@ for m=1:length(muscle)
     RPostWash=expData.getAlignedField('procEMGData',conds(8),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
     LPostWash=expData.getAlignedField('procEMGData',conds(8),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
     
-    %% Create plots
+    % Create plots
     % close all;
     poster_colors;
     colorOrder=[p_red; p_orange; p_fade_green; p_fade_blue; p_plum; p_green; p_blue; p_fade_red; p_lime; p_yellow; [0 0 0]];
@@ -99,11 +104,26 @@ for m=1:length(muscle)
                 Base=RBase.getPartialStridesAsATS(find(RBase.Data(end-40:end)));
                 Adaptation=RAdap.getPartialStridesAsATS(find(RAdap.Data(end-40:end)));
                 Washout_Late=RPostWash.getPartialStridesAsATS(find(RPostWash.Data(end-40:end)));
-                Post_Late=RPost.getPartialStridesAsATS(find(RPost.Data(end-40:end)));
+                
+                %FIXME: shuqi added to temporarily handle missing data by
+                %using early
+                if (m ==8) && (isempty(find(RPost.Data(end-40:end))))
+                    Post_Late = []
+                else
+                    Post_Late=RPost.getPartialStridesAsATS(find(RPost.Data(end-40:end)));
+                end 
                 
                 %Early
                 Post=RPost.getPartialStridesAsATS(find(RPost.Data(1:30)));
-                Pos=RPosi.getPartialStridesAsATS(find(RPosi.Data(1:30)));
+%                 Pos=RPosi.getPartialStridesAsATS(find(RPosi.Data(1:30)));
+                %FIXME: Shuqi has to change it because this data dimension was only 29 even though even time is 30   
+                if size(RPosi.Data,3) < 30
+%                     disp('missing data, m = ')
+                    missing = [missing m]
+                    Pos=RPosi.getPartialStridesAsATS(find(RPosi.Data(1:29)));
+                else
+                    Pos=RPosi.getPartialStridesAsATS(find(RPosi.Data(1:30)));
+                end
                 Neg=RNeg.getPartialStridesAsATS(find(RNeg.Data(1:30)));
                 Washout=RPostWash.getPartialStridesAsATS(find(RPostWash.Data(1:30)));
                 
@@ -137,7 +157,9 @@ for m=1:length(muscle)
         TMbase.Data=bsxfun(@rdivide,TMbase.Data,norm2);
         Base.Data=bsxfun(@rdivide,Base.Data,norm2);
         Adaptation.Data=bsxfun(@rdivide,Adaptation.Data,norm2);
-        Post_Late.Data=bsxfun(@rdivide,Post_Late.Data,norm2);
+        if ~isempty(Post_Late) %FIXME: shuqi
+            Post_Late.Data=bsxfun(@rdivide,Post_Late.Data,norm2);                
+        end 
         Washout_Late.Data=bsxfun(@rdivide,Washout_Late.Data,norm2);
         
         %             Early
@@ -177,7 +199,9 @@ for m=1:length(muscle)
                 TMbase.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
                 Base.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
                 Adaptation.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
-                Post_Late.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);
+                if ~isempty(Post_Late) %FIXME: shuqi
+                    Post_Late.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);              
+                end 
                 Washout_Late.plot(fh,ph,condColors(8,:),[],0,[-49:0],prc,true);
             end
         else
@@ -271,3 +295,14 @@ else
 end
 legend(ll(end:-1:1),condlegend{:})
 % end%%
+
+%%
+if late
+    if baselate
+        saveas(fh, [scriptDir '/EMGTraces/' subID '_BaseLate.png']);
+    else
+        saveas(fh, [scriptDir '/EMGTraces/' subID '_Late.png']);
+    end
+else
+    saveas(fh, [scriptDir '/EMGTraces/' subID '_Early.png']);
+end

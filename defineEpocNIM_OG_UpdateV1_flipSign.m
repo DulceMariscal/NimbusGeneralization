@@ -1,8 +1,8 @@
-function [eps] = defineEpocNIM_OG_UpdateV1(nantype)
+function [eps] = defineEpocNIM_OG_UpdateV1_flipSign(nantype)
 
 
 names={'OGbase','TMbase','\DeltaEMG_{on(-)}','SplitPos','Env_{Switch}','NIMBase',...
-   'Task_{Switch}','OGpost-Adapt_{SS}','OGpost_{Early}','OGpost_{Late}','NIMPost_{Early}','NIMPost_{Late}','NIM Base'};
+   'Task_{Switch}','OGpost-Adapt_{SS}','OGpost_{Early}','OGpost_{Late}','NIMPost_{Early} - OGpost_{Late}','NIMPost_{Late}','NIM Base'};
 
 eps=defineEpochs(names,...
                 {'OG Base','TM Base','Neg Short','Pos Short','NIM Base','NIM Base'...

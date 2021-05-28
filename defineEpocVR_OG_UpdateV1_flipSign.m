@@ -1,4 +1,4 @@
-function [eps] = defineEpocVR_OG_UpdateV1(nantype)
+function [eps] = defineEpocVR_OG_UpdateV1_flipSign(nantype)
 
 
 names={'OGbase','TMBaseNOVR','\DeltaEMG_{on(-)}','SplitPos','Env_{Switch}','TMBase',...
