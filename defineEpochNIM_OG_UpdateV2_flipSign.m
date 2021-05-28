@@ -1,4 +1,4 @@
-function [eps] = defineEpocNIM_OG_UpdateV2_flipSign(nantype)
+function [eps] = defineEpochNIM_OG_UpdateV2_flipSign(nantype)
 
 
 names={'OGbase','TMbase','\DeltaEMG_{on(-)}','SplitPos','Env_{Switch}','NIMBase',...

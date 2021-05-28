@@ -7,7 +7,7 @@ end
 %% Similarity of emgc1ep ~ emg c1 o
 n_subjects = length(subID);
 % TODO: works for VR group only
-ep=defineEpocVR_OG_UpdateV1('nanmean');
+ep=defineEpochVR_OG_UpdateV1('nanmean');
 [normalizedTMFullAbrupt, refEp, newLabelPrefix] = getNormalizedDataWithCleanLabels(sub, ep);
 
 for i = 1:n_subjects

@@ -1,4 +1,4 @@
-function [eps] = defineEpocVR_OG_Regressor(nantype)
+function [eps] = defineEpochVR_OG_Regressor(nantype)
 
 names={'TMbase','-\DeltaEMG_{on(+)}','SplitPos','\DeltaEMG_{on(-)}','OGbase','\DeltaEMG_{ss}','Adaptation','OGpost-Adapt_{SS}','OGpostEarly'};
 

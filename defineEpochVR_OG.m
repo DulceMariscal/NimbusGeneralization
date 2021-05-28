@@ -1,4 +1,4 @@
-function [eps] = defineEpocVR_OG(nantype)
+function [eps] = defineEpochVR_OG(nantype)
 
 
 names={'OGbase','TMBaseNOVR','SplitNeg','SplitPos','TMbase','Adaptation','OGpost-Adapt_{SS}','OGpost_{Early}','OGpost_{Late}','TMPost_{Early}','TMPost_{Late}'};

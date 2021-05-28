@@ -26,7 +26,7 @@ type='s';
 labelPrefix=fliplr([strcat('f',mOrder) strcat('s',mOrder)]); %To display
 labelPrefixLong= strcat(labelPrefix,['_' type]); %Actual names
 baseEp=getBaseEpochVR_OG;
-% ep=defineEpocVR_OG('nanmean');
+% ep=defineEpochVR_OG('nanmean');
 % baseEp=defineReferenceEpoch('TMbase',ep);
 
 %Adding alternative normalization parameters:

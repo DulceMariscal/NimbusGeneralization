@@ -1,4 +1,4 @@
-function [eps] = defineEpocNimbusShoesRegressor(nantype)
+function [eps] = defineEpochNimbusShoesRegressor(nantype)
 
 % names={'Base', 'EarlyA', 'LateA' ,'EarlyP', 'LateP'};
 
