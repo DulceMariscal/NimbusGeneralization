@@ -1,4 +1,4 @@
-function [eps] = defineEpocNimbusShoes(nantype)
+function [eps] = defineEpochNimbusShoes(nantype)
 
 % names={'Base', 'EarlyA', 'LateA' ,'EarlyP', 'LateP'};
 

@@ -8,5 +8,5 @@ fun/ext/plot2svg-master/
 gui/.DS_Store
 
 /data*
-/RegModelResults*
-/RegressionAnalysis/results*
+/RegressionAnalysis/RegModelResults*
+*.png

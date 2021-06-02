@@ -1,13 +1,14 @@
-function hfig = plotBetasHelper(ref_betas, coeff, subjIDs, transitionNum)
+function hfig = plotBetasHelper(ref_betas, coeff, subjIDs, transitionNum, resultDir)
 % plot coefficieints givein in the arguments
 % ----- Arguments ------
-% ref_betas: the reference betas for good and bad adaptors, 2D array in 2 x
+% - ref_betas: the reference betas for good and bad adaptors, 2D array in 2 x
 % numCoefficients. 
-% coeff: a cell array of tables where each table contains the coefficients, in the column Estimates
+% - coeff: a cell array of tables where each table contains the coefficients, in the column Estimates
 % assuming all coefficients in the tables are in the same order
-% subjIDs: a cell array of subject IDs used as legends.
-% transitionNum: a string rep of the transition number (used in titles and
+% - subjIDs: a cell array of subject IDs used as legends.
+% - transitionNum: a string rep of the transition number (used in titles and
 % y axis labels)
+% - resultDir: the directory to save the results figures
 % 
 % ----- Returns ------
 %  hfig : the plot handle
@@ -37,7 +38,6 @@ function hfig = plotBetasHelper(ref_betas, coeff, subjIDs, transitionNum)
     set(gca,'FontSize',18);
     ylabel(['\beta at Transition' transitionNum]);
     title(['Regression Coefficients at Transition ' transitionNum]);
-    resultDir = 'results/';
     if not(isfolder(resultDir))
         mkdir(resultDir)
     end

@@ -1,9 +1,15 @@
 %%Traces from example subject to show how data is summarized
 %% Load data
 % load('/Volumes/Users/Dulce/R01_Nimbus2021/VROG_Devon/VrG_Devon.mat')
+subID = 'CTR_01';
+scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
+load([scriptDir '/data/' subID])
+%% Set period to plot
+close all;
+late=1;
+baseOnly=1;
 
 %% Align it
-
 conds={'OG base','TM base','Pos Short','Neg Short',...
     'TM tied 1',...
     'Adaptation','OG post','TM post'};
@@ -16,8 +22,7 @@ alignmentLengths=[16,32,16,32];
 muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU','HIP'};
 % muscle={'HIP'};
 lm=1:2:35;
-late=0;
-baseOnly=0;
+
 if late==1
     
     if baseOnly==1
@@ -71,7 +76,7 @@ for m=1:length(muscle)
     RTMPost=expData.getAlignedField('procEMGData',conds(8),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
     LTMPost=expData.getAlignedField('procEMGData',conds(8),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
     
-    %% Create plots
+    % Create plots
     % close all;
     poster_colors;
     colorOrder=[p_red; p_orange; p_fade_green; p_fade_blue; p_plum; p_green; p_blue; p_fade_red; p_lime; p_yellow; [0 0 0]];
@@ -209,3 +214,14 @@ end
 legend(ll(end:-1:1),condlegend{:})
 % end%%
 set(gcf,'color','w');
+
+%% save figures
+if late
+    if baseOnly
+        saveas(fh, [scriptDir '/EMGTraces/' subID '_BaseLate.png']);
+    else
+        saveas(fh, [scriptDir '/EMGTraces/' subID '_Late.png']);
+    end
+else
+    saveas(fh, [scriptDir '/EMGTraces/' subID '_Early.png']);
+end
