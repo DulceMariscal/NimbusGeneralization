@@ -8,7 +8,9 @@ for i = 1 : length(subID)
     sub{i} = [subID{i} 'params'];
 end
 
-%% plot all relevant epochs
+groupID = 'CTR';
+
+%% load and prep data
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
 
 ss =normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
@@ -47,6 +49,7 @@ normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
 
 newLabelPrefix = regexprep(newLabelPrefix,'_s','s');
 
+%% plot epochs
 for i = 1:n_subjects
     
 
@@ -78,7 +81,7 @@ for i = 1:n_subjects
 end
 set(gcf,'color','w');
 
-saveas(fh, [scriptDir '/RegressionAnalysis/RegModelResults/' subID{i} '_AllEpochCheckerBoard.png']) 
+% saveas(fh, [scriptDir '/RegressionAnalysis/RegModelResults/' subID{i} '_AllEpochCheckerBoard.png']) 
 
 % [data,validStrides,allData]=getEpochData(adaptDataSubject,ep(1,:),newLabelPrefix);
 % [dataE,labels]=adaptDataSubject.getPrefixedEpochData(newLabelPrefix,ep,false);
@@ -223,7 +226,7 @@ if length(subID) > 1
 
     set(gcf,'color','w');
 end
-saveas(fh, [scriptDir '/RegressionAnalysis/RegModelResults/AllSubjectsOrGroupResults/' 'VRGroup_Checkerboard_ver' num2str(ver) num2str(usefft) num2str(normalizeData) num2str(flipSign) '.png'])
+saveas(fh, [scriptDir '/RegressionAnalysis/RegModelResults/AllSubjectsOrGroupResults/' groupID '_Checkerboard_ver' num2str(ver) num2str(usefft) num2str(normalizeData) num2str(flipSign) '.png'])
 %% Prepare data for regression analysis V2
 %handling nan value?
 %normalize data? 
@@ -245,37 +248,45 @@ if usefft %do fft - run only once
     Data{1} = fftshift(Data{1},1);
 end
 %% 
-normalizeData
-if normalizeData
-    DataOriginal = Data;
-    for i = 1:size(Data,2)
-        Data{i} = Data{i}/norm(Data{i});
+clc
+format compact
+for normIndex = 0:1
+    fprintf('\n\n')
+    normalizeData = normIndex
+    if normalizeData
+        DataOriginal = Data;
+        for i = 1:size(Data,2)
+            Data{i} = Data{i}/norm(Data{i});
+        end
     end
-end
 
-%% Run regression analysis V2
-tableData=table(Data{1},Data{2},Data{3},Data{4},Data{5},'VariableNames',{'Adapt', 'EnvSwitch', 'TaskSwitch', 'Trans1', 'Trans2'});
-fitTrans1NoConst=fitlm(tableData,'Trans1 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
-Rsquared = fitTrans1NoConst.Rsquared
+    % for i = 1:size(Data,2)
+    %     norm(Data{i})
+    % end
+    %%% Run regression analysis V2
+    tableData=table(Data{1},Data{2},Data{3},Data{4},Data{5},'VariableNames',{'Adapt', 'EnvSwitch', 'TaskSwitch', 'Trans1', 'Trans2'});
+    fitTrans1NoConst=fitlm(tableData,'Trans1 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
+    Rsquared = fitTrans1NoConst.Rsquared
 
-fprintf('\n\n\n')
+    fprintf('\n\n\n')
 
-fitTrans2NoConst=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
-Rsquared = fitTrans2NoConst.Rsquared
+    fitTrans2NoConst=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
+    Rsquared = fitTrans2NoConst.Rsquared
 
-scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
-resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];
-if not(isfolder(resDir))
-    mkdir(resDir)
-end
+    scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
+    resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];
+    if not(isfolder(resDir))
+        mkdir(resDir)
+    end
 
-if length(subID) == 1
-    save([resDir, subID{1}, 'models_ver' num2str(ver) num2str(usefft) num2str(normalizeData) num2str(flipSign)], 'fitTrans1NoConst','fitTrans2NoConst')
-else
-    %version convention: first digit: use first or last stride, 2nd digit:
-    %use fft or not, 3rd digit: normalize or not, i.e., ver_101 = use first
-    %20 strides, no fft and normalized data
-    save([resDir 'AllSubjectsOrGroupResults/VRGroup' 'models_ver' num2str(ver) num2str(usefft) num2str(normalizeData) num2str(flipSign)  ], 'fitTrans1NoConst','fitTrans2NoConst')
+    if length(subID) == 1
+        save([resDir, subID{1}, 'models_ver' num2str(ver) num2str(usefft) num2str(normalizeData) num2str(flipSign)], 'fitTrans1NoConst','fitTrans2NoConst')
+    else
+        %version convention: first digit: use first or last stride, 2nd digit:
+        %use fft or not, 3rd digit: normalize or not, i.e., ver_101 = use first
+        %20 strides, no fft and normalized data
+        save([resDir 'AllSubjectsOrGroupResults/' groupID 'Groupmodels_ver' num2str(ver) num2str(usefft) num2str(normalizeData) num2str(flipSign)  ], 'fitTrans1NoConst','fitTrans2NoConst')
+    end
 end
 %% Regressors V1 - 
 
