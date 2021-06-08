@@ -261,6 +261,3 @@ for normIndex = 0:1
         end
     end
 end
-
-%% Compute vector length of each regressors
-fitTrans1NoConst.Variables
