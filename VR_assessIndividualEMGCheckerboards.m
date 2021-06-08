@@ -265,6 +265,12 @@ for normIndex = 0:1
     fitTrans2NoConst=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
     Rsquared = fitTrans2NoConst.Rsquared
 
+    %compute and print out relative vector norm to assess the length
+    %difference between regressors
+    fprintf('\n\n')
+    vec_norm = vecnorm(fitTrans1NoConst.Variables{:,:});
+    relNom = normalize(vec_norm,'norm',1)
+    
     scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
     if saveResAndFigure
         resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];

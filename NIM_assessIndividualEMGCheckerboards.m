@@ -221,7 +221,7 @@ end
 format compact
 % format loose %(default)
 for normIndex = 0:1
-    fprintf('\n\n')
+    fprintf('\n\n\n')
     normalizeData = normIndex
     if normalizeData
         DataOriginal = Data;
@@ -235,11 +235,17 @@ for normIndex = 0:1
     fitTrans1NoConst=fitlm(tableData,'Trans1 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
     Rsquared = fitTrans1NoConst.Rsquared
 
-    fprintf('\n\n\n')
+    fprintf('\n\n')
 
     fitTrans2NoConst=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
     Rsquared = fitTrans2NoConst.Rsquared
-
+    
+    %compute and print out relative vector norm to assess the length
+    %difference between regressors
+    fprintf('\n\n')
+    vec_norm = vecnorm(fitTrans1NoConst.Variables{:,:});
+    relNom = normalize(vec_norm,'norm',1)
+    
     if saveResAndFigure
         resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];
         if not(isfolder(resDir))
