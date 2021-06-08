@@ -1,9 +1,9 @@
 %% Always run this if needs to load or save data/figures
 %get this script's folder, data loading and saving would be based on the current script's location
+clear all; close all; clc;
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 
 %% put all regression data into 1 matrix - only need to run it once, the results are saved
-
 coeff_trans1 = {};
 coeff_trans2 = {};
 subjIDs = {'VROG_03','VROG_02','VrG_Devon','NimbG_BoyanAllMuscles','CVROG_01'};
@@ -38,3 +38,17 @@ set(gca,'FontSize',18);
 %view -68, -2
 view(-68,-2)
 
+%% put all group regression data into 1 matrix - only need to run it once, the results are saved
+coeff_trans1 = {};
+coeff_trans2 = {};
+normalized = 1;
+groupIDs = {'CTR','CTS','VROG','NTR','NTS'};
+for i = 1:length(groupIDs)
+    load([scriptDir '/RegModelResults/AllSubjectsOrGroupResults/',groupIDs{i},'_group_models_ver0' num2str(normalized) '.mat'])
+    coeff_trans1{i} = fitTrans1NoConst.Coefficients;
+    coeff_trans2{i}  = fitTrans2NoConst.Coefficients;
+end
+
+%% plot bar plot of the group regression data
+barplotGroupBetasHelper(coeff_trans1, groupIDs, 1, normalized, [scriptDir '/RegModelResults/AllSubjectsOrGroupResults/'])
+barplotGroupBetasHelper(coeff_trans2, groupIDs, 2, normalized, [scriptDir '/RegModelResults/AllSubjectsOrGroupResults/'])
