@@ -12,6 +12,7 @@ clear; close all; clc;
 % load('C:\Users\dum5\Box\GeneralizationStudy Data\NormalizedFastYoungEMGData.mat')
 % sub={'YL02params'};
 groupID = 'NTR';
+saveResAndFigure = false;
 
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 files = dir ([scriptDir '/data/' groupID '*params.mat']);
@@ -91,8 +92,13 @@ for i = 1:n_subjects
     
     extremaMatrixYoung(i,:,1) =  min(dataRef{1});
     extremaMatrixYoung(i,:,2) =  max(dataRef{1});
-    saveas(fh, [scriptDir '/RegressionAnalysis/RegModelResults/' subID{i} '_AllEpochCheckerBoard.png']) 
-
+    if (saveResAndFigure)
+        resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];
+        if not(isfolder(resDir))
+            mkdir(resDir)
+        end
+        saveas(fh, [resDir subID{i} '_AllEpochCheckerBoard.png']) 
+    end
 end
 set(gcf,'color','w');
 
@@ -144,7 +150,13 @@ for i = 1:n_subjects
     
     extremaMatrixYoung(i,:,1) =  min(dataRef2);
     extremaMatrixYoung(i,:,2) =  max(dataRef2);
-   saveas(fh, [scriptDir '/RegressionAnalysis/RegModelResults/' subID{i} '_Checkerboard_ver' num2str(usefft) num2str(normalizeData) '.png']) 
+    if saveResAndFigure
+        resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];
+        if not(isfolder(resDir))
+            mkdir(resDir)
+        end
+        saveas(fh, [resDir subID{i} '_Checkerboard_ver' num2str(usefft) num2str(normalizeData) '.png']) 
+    end
 end
 set(gcf,'color','w');
 
@@ -178,8 +190,14 @@ if length(subID) > 1
 
     set(gcf,'color','w');
 end
-saveas(fh, [scriptDir '/RegressionAnalysis/RegModelResults/AllSubjectsOrGroupResults/' groupID '_Checkerboard_ver' num2str(usefft) num2str(normalizeData) '.png'])
-%% Prepare data for regression analysis V2
+if saveResAndFigure
+    resDir = [scriptDir '/RegressionAnalysis/RegModelResults/AllSubjectsOrGroupResults/'];
+    if not(isfolder(resDir))
+        mkdir(resDir)
+    end
+    saveas(fh, [resDir groupID '_group_Checkerboard_ver' num2str(usefft) num2str(normalizeData) '.png'])
+end
+    %% Prepare data for regression analysis V2
 %handling nan value?
 %normalize data? 
 clc;
@@ -222,18 +240,21 @@ for normIndex = 0:1
     fitTrans2NoConst=fitlm(tableData,'Trans2 ~ TaskSwitch+EnvSwitch+Adapt-1')%exclude constant
     Rsquared = fitTrans2NoConst.Rsquared
 
-    scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
-    resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];
-    if not(isfolder(resDir))
-        mkdir(resDir)
-    end
-
-    if length(subID) == 1
-        save([resDir, subID{1}, 'models_ver' num2str(usefft) num2str(normalizeData)], 'fitTrans1NoConst','fitTrans2NoConst')
-    else
-        %version convention: first digit: use first or last stride, 2nd digit:
-        %use fft or not, 3rd digit: normalize or not, i.e., ver_101 = use first
-        %20 strides, no fft and normalized data
-        save([resDir 'AllSubjectsOrGroupResults/' groupID 'models_ver' num2str(usefft) num2str(normalizeData)], 'fitTrans1NoConst','fitTrans2NoConst')
+    if saveResAndFigure
+        resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];
+        if not(isfolder(resDir))
+            mkdir(resDir)
+        end
+        if length(subID) == 1
+            save([resDir, subID{1}, 'models_ver' num2str(usefft) num2str(normalizeData)], 'fitTrans1NoConst','fitTrans2NoConst')
+        else
+            %version convention: first digit: use first or last stride, 2nd digit:
+            %use fft or not, 3rd digit: normalize or not, i.e., ver_101 = use first
+            %20 strides, no fft and normalized data
+            save([resDir 'AllSubjectsOrGroupResults/' groupID '_group_models_ver' num2str(usefft) num2str(normalizeData)], 'fitTrans1NoConst','fitTrans2NoConst')
+        end
     end
 end
+
+%% Compute vector length of each regressors
+fitTrans1NoConst.Variables
