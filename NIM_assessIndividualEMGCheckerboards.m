@@ -7,6 +7,9 @@
 % - can plot and run regression for both indidual subjects or group subjects (only enabled if more than 1 subjects id provided),
 % turn off individual subjects plotting by setting to false
 
+%% Update params file condition names to match
+% changeCondName('NTR_01',{'TM base', 'NIM base'},{'TM tied 1','TR base'})
+
 %% Load data 
 clear; close all; clc;
 
@@ -15,7 +18,7 @@ clear; close all; clc;
 % sub={'YL02params'};
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'NTR_01'; % groupID to grab all subjects from the same group. If only want to grab 1 subject, specify subject ID.
+groupID = 'NTR'; % groupID to grab all subjects from the same group. If only want to grab 1 subject, specify subject ID.
 saveResAndFigure = true;
 plotAllEpoch = false;
 plotIndSubjects = false;
@@ -112,7 +115,7 @@ end
 % baseline - EMG_split(-) 
 
 usefft = 0; normalizeData = 0;
-ep=defineEpochNIM_OG_UpdateV1_flipSign('nanmean');
+ep=defineEpochNIM_OG_UpdateV1('nanmean');
 refEpAdaptLate = defineReferenceEpoch('Task_{Switch}',ep);
 
 refEpOGBase=defineReferenceEpoch('OGbase',ep);
@@ -202,7 +205,7 @@ if length(subID) > 1
 
     set(gcf,'color','w');
     
-    resDir = [scriptDir '/RegressionAnalysis/RegModelResults/AllSubjectsOrGroupResults/'];
+    resDir = [scriptDir '/RegressionAnalysis/RegModelResults/GroupResults/'];
     if saveResAndFigure    
         if not(isfolder(resDir))
             mkdir(resDir)
@@ -213,7 +216,7 @@ if length(subID) > 1
     % run regression and save results
     format compact % format loose %(default)
 %     not normalized first, then normalized
-    runRegression(Data, false, true, groupID, resDir, saveResAndFigure, usefft)
+    runRegression(Data, normalizeData, true, groupID, resDir, saveResAndFigure, usefft)
     runRegression(Data, true, true, groupID, resDir, saveResAndFigure, usefft)
 %     (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, usefft) 
 end

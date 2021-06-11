@@ -15,10 +15,10 @@ end
 
 %% plot all betas by regressor type/name - preferred
 ref_tran1 = [0,-1,1;1 -1 0];
-hfig = plotBetasHelper(ref_tran1, coeff_trans1, subjIDs, '1', [scriptDir '/RegModelResults/AllSubjectsOrGroupResults/']);
+hfig = plotBetasHelper(ref_tran1, coeff_trans1, subjIDs, '1', [scriptDir '/RegModelResults/AllGroupResults/']);
     
 ref_tran2 = [1,1,0;0 1 0];
-plotBetasHelper(ref_tran2, coeff_trans2, subjIDs, '2', [scriptDir '/RegModelResults/AllSubjectsOrGroupResults/']);
+plotBetasHelper(ref_tran2, coeff_trans2, subjIDs, '2', [scriptDir '/RegModelResults/AllGroupResults/']);
 
 %% plot all betas in 3D plots
 figure; hold on;
@@ -41,14 +41,15 @@ view(-68,-2)
 %% put all group regression data into 1 matrix - only need to run it once, the results are saved
 coeff_trans1 = {};
 coeff_trans2 = {};
-normalized = 1;
+normalized = 0;
 groupIDs = {'CTR','CTS','VROG','NTR','NTS'};
 for i = 1:length(groupIDs)
-    load([scriptDir '/RegModelResults/AllSubjectsOrGroupResults/',groupIDs{i},'_group_models_ver0' num2str(normalized) '.mat'])
+    load([scriptDir '/RegModelResults/GroupResults/',groupIDs{i},'_group_models_ver0' num2str(normalized) '.mat'])
     coeff_trans1{i} = fitTrans1NoConst.Coefficients;
     coeff_trans2{i}  = fitTrans2NoConst.Coefficients;
 end
 
 %% plot bar plot of the group regression data
-barplotGroupBetasHelper(coeff_trans1, groupIDs, 1, normalized, [scriptDir '/RegModelResults/AllSubjectsOrGroupResults/'])
-barplotGroupBetasHelper(coeff_trans2, groupIDs, 2, normalized, [scriptDir '/RegModelResults/AllSubjectsOrGroupResults/'])
+barplotGroupBetasHelper(coeff_trans1, groupIDs, 1, normalized, [scriptDir '/RegModelResults/AllGroupResults/'])
+barplotGroupBetasHelper(coeff_trans2, groupIDs, 2, normalized, [scriptDir '/RegModelResults/AllGroupResults/'])
+% task switch ~= no-adapt, env+task switch = switching

@@ -2,7 +2,7 @@
 %% Load data
 clear all; close all; clc
 % load('.../GYAAT_01.mat');
-subID = 'NTR_00';
+subID = 'NTR_03';
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 load([scriptDir '/data/' subID])
 
@@ -20,8 +20,8 @@ baselate=0;
 missing = [];
 %% Align it
 
-conds={'OG base','TM Base','Pos short',...
-    'Neg Short','NIM Base','Adaptation',...
+conds={'OG base','TM tied 1','Pos short',...
+    'Neg Short','TR Base','Adaptation',...
     'Post 1','Post 2'};
 
 % condlegend={'TM base','Early Adapt','Late Adapt','Early Post','Late Post','Short Pos','Short Neg'};

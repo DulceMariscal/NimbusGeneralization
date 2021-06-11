@@ -42,6 +42,7 @@ function runRegression(Data, normalizeData, isGroupData, dataId, resDir, saveRes
     end
     
     fprintf('\n\n\n')
+    normalizeData
     if normalizeData
         for i = 1:size(Data,2)
             Data{i} = Data{i}/norm(Data{i});

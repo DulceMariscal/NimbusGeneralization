@@ -198,7 +198,7 @@ if length(subID) > 1
     set(ph(1,end),'Position',pos);
     set(gcf,'color','w');
     
-    resDir = [scriptDir '/RegressionAnalysis/RegModelResults/AllSubjectsOrGroupResults/'];
+    resDir = [scriptDir '/RegressionAnalysis/RegModelResults/GroupResults/'];
     if (saveResAndFigure)    
         if not(isfolder(resDir))
             mkdir(resDir)
