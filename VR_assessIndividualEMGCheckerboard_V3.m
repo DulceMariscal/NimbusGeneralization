@@ -7,21 +7,15 @@
 % - can plot and run regression for both indidual subjects or group subjects (only enabled if more than 1 subjects id provided),
 % turn off individual subjects plotting by setting to false
 
-%% Update params file condition names to match
-% changeCondName('NTR_01',{'TM base', 'NIM base'},{'TM tied 1','TR base'})
-
-%% Load data 
+%% Load data and Plot checkerboard for all conditions.
 clear; close all; clc;
 
-% load('/Users/samirsherlekar/Desktop/emg/Data/normalizedYoungEmgData.mat');
-% load('C:\Users\dum5\Box\GeneralizationStudy Data\NormalizedFastYoungEMGData.mat')
-% sub={'YL02params'};
-
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'NTR'; % groupID to grab all subjects from the same group. If only want to grab 1 subject, specify subject ID.
+groupID = 'CTR';
 saveResAndFigure = true;
 plotAllEpoch = false;
 plotIndSubjects = false;
+plotGroup = true;
 
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 files = dir ([scriptDir '/data/' groupID '*params.mat']);
@@ -34,7 +28,7 @@ for i = 1:n_subjects
 end
 subID
 
-%% load and prepare data. 
+%% load and prep data
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
 
 ss =normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
@@ -46,7 +40,6 @@ normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ss,s2);
 
 % muscleOrder={'TA','MG','SEMT','VL','RF'};
 muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'HIP'};
-% muscleOrder={'TA', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'HIP'};
 
 n_muscles = length(muscleOrder);
 
@@ -54,8 +47,8 @@ n_subjects = length(subID);
 extremaMatrixYoung = NaN(n_subjects,n_muscles * 2,2);
 
 
-ep=defineEpochNimbusShoes('nanmean');
-refEp = defineReferenceEpoch('OGNimbus',ep);
+ep=defineEpochVR_OG('nanmean');
+refEp = defineReferenceEpoch('TRbase',ep);
 refEpLate = defineReferenceEpoch('Adaptation',ep);
 % refEp = defineEpochYoungLongAdaptation('Fast',ep);
 
@@ -73,9 +66,20 @@ normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
 
 newLabelPrefix = regexprep(newLabelPrefix,'_s','s');
 
-%% plot all epochs for all relevant conditions
+%%
+% Remove fRF from CTS
+if strcmp(groupID,'CTS')
+    badMuscleNames = {'fRFs'};
+    badMuscleIdx=[];
+    for bm = badMuscleNames
+        badMuscleIdx = [badMuscleIdx, find(ismember(newLabelPrefix,bm))];
+    end
+    newLabelPrefix = newLabelPrefix(setdiff(1:end, badMuscleIdx))
+end
+%% plot epochs
 if plotAllEpoch
     for i = 1:n_subjects
+
         adaptDataSubject = normalizedTMFullAbrupt.adaptData{1, i}; 
 
         fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
@@ -83,7 +87,7 @@ if plotAllEpoch
         flip=true;
 
         adaptDataSubject.plotCheckerboards(newLabelPrefix,refEp,fh,ph(1,1),[],flip); %First, plot reference epoch:   
-        [~,~,labels,dataE{1},dataRef{1}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
+        [~,~,labels,dataE{i},dataRef{i}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
         adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(7,:),fh,ph(1,8),refEpLate,flip);%Second, the rest:
 
 
@@ -95,35 +99,37 @@ if plotAllEpoch
         axes(ph(1,end))
         colorbar
         set(ph(1,end),'Position',pos);
-
         set(gcf,'color','w');
 
         extremaMatrixYoung(i,:,1) =  min(dataRef{1});
         extremaMatrixYoung(i,:,2) =  max(dataRef{1});
         if (saveResAndFigure)
-            resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V7/'];
             if not(isfolder(resDir))
                 mkdir(resDir)
             end
-            saveas(fh, [resDir subID{i} '_AllEpochCheckerBoard.png']) 
+            saveas(fh, [resDir subID{i} '_AllEpochCheckerBoard.png'])
+            saveas(fh, [resDir subID{i} '_AllEpochCheckerBoard'],'epsc') 
         end
     end
 end
-%% Regressor V2 - Update from disucssion on Tuesday MAy 4, 2021 
+%% Regressor V2, prepare data for regressor checkerboards and regression model
+% - Update from disucssion on Tuesday MAy 4, 2021
+% - Refer to OneNote for naming details
+
 % Adapt VR- baseline VR
 % OG base - baseline VR 
-% baseline - EMG_split(-) 
+% baseline - EMG_split(-)
 
-usefft = 0; normalizeData = 0;
-ep=defineEpochNIM_OG_UpdateV1('nanmean');
+usefft = 0; normalizeData = 0; 
+ep=defineEpochVR_OG_UpdateV3('nanmean');
 refEpAdaptLate = defineReferenceEpoch('Task_{Switch}',ep);
 
-refEpOGBase=defineReferenceEpoch('OGbase',ep);
-refEpOGpost= defineReferenceEpoch('Post1_{Late}',ep);
+refEpOGpost= defineReferenceEpoch('OGpost_{Late}',ep);
 refEp= defineReferenceEpoch('TMbase',ep);
-
-%% Plot checkerboards per subject
-if plotIndSubjects || length(subID) == 1
+refPosShort = defineReferenceEpoch('NonAdapt (-\DeltaEMG_{on(+)})', ep);
+%% plot checkerboard and run regression per subject
+if plotIndSubjects
     close all;
     for i = 1:n_subjects
 
@@ -134,17 +140,17 @@ if plotIndSubjects || length(subID) == 1
         flip=true;
 
         Data = {}; %in order: adapt, dataEnvSwitch, dataTaskSwitch, dataTrans1, dataTrans2
-        %all labels should be the same, no need to save again.
         if usefft
             [~,~,labels,Data{1},dataRef2]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(4,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
         else
             [~,~,labels,Data{1},dataRef2]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
         end
-        [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(5,:),fh,ph(1,2),refEpOGBase,flip); %  base - OG base, env switching
-        [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(7,:),fh,ph(1,3),ep(6,:),flip); % Adapt SS - baseline TM, task switching (within env)
-        [~,~,~,Data{4},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS} , transition 1
-        [~,~,~,Data{5},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %Nimbus post early - OG post late, transition 2
-    %     [~,~,labels,dataE{1},dataRef{1}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:    
+        %all labels should be the same, no need to save again.
+        [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,refPosShort,fh,ph(1,2),ep(4,:),flip); % Noadapt (env-driven), TM base - EMG_on(+)
+        [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),ep(5,:),flip); %  OG base - TR base, env switching
+        [~,~,~,Data{4},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS}, transition 1 
+        [~,~,~,Data{5},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %TM post VR early - OG post late, transition 2
+    %     [~,~,labels,dataE{1},dataRef{1}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
 
         set(ph(:,1),'CLim',[-1 1]);
     %     set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*2);
@@ -155,28 +161,27 @@ if plotIndSubjects || length(subID) == 1
         colorbar
         set(ph(1,end),'Position',pos);
         set(gcf,'color','w');
-
-        extremaMatrixYoung(i,:,1) =  min(dataRef2);
-        extremaMatrixYoung(i,:,2) =  max(dataRef2);
-
-        resDir = [scriptDir '/RegressionAnalysis/RegModelResults/'];
-        if saveResAndFigure
+        
+        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V7/'];
+        if (saveResAndFigure)
             if not(isfolder(resDir))
                 mkdir(resDir)
             end
-            saveas(fh, [resDir subID{i} '_Checkerboard_ver' num2str(usefft) num2str(normalizeData) '.png']) 
+            saveas(fh, [resDir subID{i} '_Checkerboard_ver' num2str(usefft) num2str(normalizeData) '.png'])
+            saveas(fh, [resDir subID{i} '_Checkerboard_ver' num2str(usefft) num2str(normalizeData)],'epsc')
         end
-
+        
         % run regression and save results
         format compact % format loose %(default)
         %     not normalized first, then normalized
-        runRegression(Data, false, false, subID{i}, resDir, saveResAndFigure, usefft)
-        runRegression(Data, true, false, subID{i}, resDir, saveResAndFigure, usefft)
+        runRegression_V3(Data, false, false, subID{i}, resDir, saveResAndFigure, usefft)
+        runRegression_V3(Data, true, false, subID{i}, resDir, saveResAndFigure, usefft)
         %     (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, usefft) 
+
     end
 end
-%% plot checkerboard per group
-if length(subID) > 1
+%% plot checkerboards and run regression per group
+if length(subID) > 1 || plotGroup
     fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
     ph=tight_subplot(1,5,[.03 .005],.04,.04);
     flip=true;
@@ -188,8 +193,8 @@ if length(subID) > 1
         [~,~,labels,Data{1},dataRef2]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
     end
     %all labels should be the same, no need to save again.
-    [~,~,~,Data{2},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(5,:),fh,ph(1,2),refEpOGBase,flip); % TM base VR - OG base, env switching
-    [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(7,:),fh,ph(1,3),ep(6,:),flip); % Adapt SS - baseline TM, task switching (within env)
+    [~,~,~,Data{2},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,refPosShort,fh,ph(1,2),ep(4,:),flip); % Noadapt (env-driven), TM base - EMG_on(+)
+    [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),ep(5,:),flip); % OG base - TR base, env switching
     [~,~,~,Data{4},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS}, transition 1
     [~,~,~,Data{5},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %TM post VR early - OG post late, transition 2
     %     [~,~,labels,dataE{1},dataRef{1}]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
@@ -202,22 +207,21 @@ if length(subID) > 1
     axes(ph(1,end))
     colorbar
     set(ph(1,end),'Position',pos);
-
     set(gcf,'color','w');
     
-    resDir = [scriptDir '/RegressionAnalysis/RegModelResults/GroupResults/'];
-    if saveResAndFigure    
+    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V7/GroupResults/'];
+    if (saveResAndFigure)    
         if not(isfolder(resDir))
             mkdir(resDir)
         end
         saveas(fh, [resDir groupID '_group_Checkerboard_ver' num2str(usefft) num2str(normalizeData) '.png'])
+        saveas(fh, [resDir groupID '_group_Checkerboard_ver' num2str(usefft) num2str(normalizeData)], 'epsc')
     end
-    
+
     % run regression and save results
     format compact % format loose %(default)
 %     not normalized first, then normalized
-    runRegression(Data, normalizeData, true, groupID, resDir, saveResAndFigure, usefft)
-    runRegression(Data, true, true, groupID, resDir, saveResAndFigure, usefft)
+    runRegression_V3(Data, false, true, groupID, resDir, saveResAndFigure, usefft)
+    runRegression_V3(Data, true, true, groupID, resDir, saveResAndFigure, usefft)
 %     (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, usefft) 
 end
-% TODO: handling nan value in regression

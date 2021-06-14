@@ -1,8 +1,8 @@
 %%Traces from example subject to show how data is summarized
 %% Load data
-% clear all; close all; clc
+clear all; close all; clc
 % load('.../GYAAT_01.mat');
-subID = 'NTS_03';
+subID = 'NTR_03';
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 load([scriptDir '/data/' subID])
 
@@ -15,14 +15,14 @@ load([scriptDir '/data/' subID])
 % load('NimbG_Boyan.mat')
 
 %% Set period to plot
-late=0;
+late=1;
 baselate=0;
 missing = [];
 %% Align it
 
-conds={'OG base','TM Base','Pos short',...
-    'Neg Short','NIM Base','Adaptation',...
-    'OG Post','NIM Post'};
+conds={'OG base','TM tied 1','Pos short',...
+    'Neg Short','TR Base','Adaptation',...
+    'Post 1','Post 2'};
 
 % condlegend={'TM base','Early Adapt','Late Adapt','Early Post','Late Post','Short Pos','Short Neg'};
 condlegend=conds;
@@ -104,30 +104,13 @@ for m=1:length(muscle)
                 Base=RBase.getPartialStridesAsATS(find(RBase.Data(end-40:end)));
                 Adaptation=RAdap.getPartialStridesAsATS(find(RAdap.Data(end-40:end)));
                 Washout_Late=RPostWash.getPartialStridesAsATS(find(RPostWash.Data(end-40:end)));
-                
-                %FIXME: shuqi added to temporarily handle missing data by
-                %using early
-                if (m ==8) && (isempty(find(RPost.Data(end-40:end))))
-                    Post_Late = []
-                else
-                    Post_Late=RPost.getPartialStridesAsATS(find(RPost.Data(end-40:end)));
-                end 
+                Post_Late=RPost.getPartialStridesAsATS(find(RPost.Data(end-40:end)));
                 
                 %Early
                 Post=RPost.getPartialStridesAsATS(find(RPost.Data(1:30)));
-%                 Pos=RPosi.getPartialStridesAsATS(find(RPosi.Data(1:30)));
-                %FIXME: Shuqi has to change it because this data dimension was only 29 even though even time is 30   
-                if size(RPosi.Data,3) < 30
-%                     disp('missing data, m = ')
-                    missing = [missing m]
-                    Pos=RPosi.getPartialStridesAsATS(find(RPosi.Data(1:29)));
-                else
-                    Pos=RPosi.getPartialStridesAsATS(find(RPosi.Data(1:30)));
-                end
+                Pos=RPosi.getPartialStridesAsATS(find(RPosi.Data(1:30)));
                 Neg=RNeg.getPartialStridesAsATS(find(RNeg.Data(1:30)));
-                Washout=RPostWash.getPartialStridesAsATS(find(RPostWash.Data(1:30)));
-                
-                
+                Washout=RPostWash.getPartialStridesAsATS(find(RPostWash.Data(1:30)));              
                 
                 tit=['R' muscle{m}];
             case 2
@@ -157,9 +140,7 @@ for m=1:length(muscle)
         TMbase.Data=bsxfun(@rdivide,TMbase.Data,norm2);
         Base.Data=bsxfun(@rdivide,Base.Data,norm2);
         Adaptation.Data=bsxfun(@rdivide,Adaptation.Data,norm2);
-        if ~isempty(Post_Late) %FIXME: shuqi
-            Post_Late.Data=bsxfun(@rdivide,Post_Late.Data,norm2);                
-        end 
+        Post_Late.Data=bsxfun(@rdivide,Post_Late.Data,norm2);                
         Washout_Late.Data=bsxfun(@rdivide,Washout_Late.Data,norm2);
         
         %             Early
@@ -199,9 +180,7 @@ for m=1:length(muscle)
                 TMbase.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
                 Base.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
                 Adaptation.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
-                if ~isempty(Post_Late) %FIXME: shuqi
-                    Post_Late.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);              
-                end 
+                Post_Late.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);              
                 Washout_Late.plot(fh,ph,condColors(8,:),[],0,[-49:0],prc,true);
             end
         else

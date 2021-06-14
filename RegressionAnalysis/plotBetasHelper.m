@@ -1,5 +1,6 @@
 function hfig = plotBetasHelper(ref_betas, coeff, subjIDs, transitionNum, resultDir)
-% plot coefficieints givein in the arguments
+% plot coefficieints given in the arguments in scatter plots where x-axis
+% is the coefficient type
 % ----- Arguments ------
 % - ref_betas: the reference betas for good and bad adaptors, 2D array in 2 x
 % numCoefficients. 
@@ -38,8 +39,13 @@ function hfig = plotBetasHelper(ref_betas, coeff, subjIDs, transitionNum, result
     set(gca,'FontSize',18);
     ylabel(['\beta at Transition' transitionNum]);
     title(['Regression Coefficients at Transition ' transitionNum]);
-    if not(isfolder(resultDir))
-        mkdir(resultDir)
+    
+    if nargin == 5 %no result directory provided, avoid saving
+        if not(isfolder(resultDir))
+            mkdir(resultDir)
+        end
+        saveas(hfig,[resultDir 'betas_transition_', transitionNum, '.png'],'png')
+    else
+        fprintf('No result directory provided. Figures not auto-saved.\n')
     end
-    saveas(hfig,[resultDir 'betas_transition_', transitionNum, '.png'],'png')
 end

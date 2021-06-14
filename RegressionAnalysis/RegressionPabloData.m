@@ -100,7 +100,7 @@ set(gca,'FontSize',18);
 
 % axis([-.7 1.55 -.5 1.5]) 
 title('Regression analysis of Old Data: Trans1 ~ Adapt + TaskSwitch -1')
-saveas(fh, [scriptDir '/RegModelResults/AllSubjectsOrGroupResults/pabloData_newModelBetas_defaultAxis.png'])
+saveas(fh, [scriptDir '/RegModelResults/GroupResults/pabloData_newModelBetas_defaultAxis.png'])
 
 %% correlation matrix plot - not in use, handled in python
 vars = [tableData.('eP_lA'),tableData.('eA'),tableData.('eAT'),tableData.('lA')];
