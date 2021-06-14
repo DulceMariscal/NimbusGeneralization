@@ -1,4 +1,4 @@
-function hfig = barplotGroupBetasHelper(coeff, groupIDs, transitionNum, normalized, resultDir)
+function hfig = barplotGroupBetasHelper(coeff, groupIDs, transitionNum, normalized, legendLabels,resultDir)
 % plot coefficieints given in the arguments in bar plots grouped by subject
 % group, and error bar indicates group regression fit SE.
 % ----- Arguments ------
@@ -22,25 +22,25 @@ function hfig = barplotGroupBetasHelper(coeff, groupIDs, transitionNum, normaliz
     hfig = figure('Position', get(0, 'Screensize'));
     hold on;
     colors = {'#0072BD','#D95319','#EDB120','#7E2F8E','#77AC30','#4DBEEE','#A2142F'};
-    num_coeff = length(coeff{1}.Estimate);
+    num_coeff = length(coeff{1,1}.Estimate);
     
     xtickloc = nan(1,length(groupIDs));
     for i = 1:length(groupIDs)
         for j = 1 :num_coeff
-            bar(i*(num_coeff+1) + j , coeff{i}.Estimate(j),'FaceColor',colors{j},'EdgeColor',colors{j});%,'.','Color',colors{i},'MarkerSize',40)
+            bar(i*(num_coeff+1) + j , coeff{1,i}.Estimate(j),'FaceColor',colors{j},'EdgeColor',colors{j});%,'.','Color',colors{i},'MarkerSize',40)
             %x, bary, errorlow, errorhigh, the error is absolute value from the bar height   
-            errorbar(i*(num_coeff+1) + j,coeff{i}.Estimate(j),coeff{i}.SE(j),coeff{i}.SE(j), 'Color','k','LineWidth',3); 
+            errorbar(i*(num_coeff+1) + j,coeff{1,i}.Estimate(j),coeff{1,i}.SE(j),coeff{1,i}.SE(j), 'Color','k','LineWidth',3); 
         end
         xtickloc(i) = i*(num_coeff+1) + j/2 + 0.5;
     end
 
-    set(gca,'XLim',[1*(num_coeff+1) (length(groupIDs)+1)*(num_coeff+1)],'XTick',xtickloc,'XTickLabel',groupIDs);
+    set(gca,'XLim',[1*(num_coeff+1) (length(groupIDs)+1)*(num_coeff+1)],'XTick',xtickloc,'XTickLabel',groupIDs, 'YLim',[-1.2 1.2]);
     set(gca,'FontSize',18);
     ylabel(['\beta at Transition' transitionNum]);
     title(['Regression Coefficients at Transition ' num2str(transitionNum)]);
 
     f= get(gca,'Children');
-    legendLabels = coeff{1}.Row;
+%     legendLabels = coeff{1}.Row;
     legendLabels{end+1} = 'SE (Group Regression)';
     legendidx = nan(1, num_coeff);
     for i = 1:num_coeff
@@ -49,12 +49,13 @@ function hfig = barplotGroupBetasHelper(coeff, groupIDs, transitionNum, normaliz
     legendidx(num_coeff+1) = length(f) - 1; %SE legend
     legend(f(legendidx),legendLabels); %item plotted 1st, 10th and 20th
     
-    if nargin == 5 %no result directory provided, avoid saving
+    if nargin < 6 || isempty(resultDir) %no result directory provided, avoid saving
+        fprintf('No result directory provided. Figures not auto-saved.\n')
+    else 
         if not(isfolder(resultDir))
             mkdir(resultDir)
         end
         saveas(hfig,[resultDir 'allgroup_betas_transition_', num2str(transitionNum), '_normalize_' num2str(normalized) '.png'],'png')
-    else
-        fprintf('No result directory provided. Figures not auto-saved.\n')
+        saveas(hfig,[resultDir 'allgroup_betas_transition_', num2str(transitionNum), '_normalize_' num2str(normalized)],'epsc')
     end
 end

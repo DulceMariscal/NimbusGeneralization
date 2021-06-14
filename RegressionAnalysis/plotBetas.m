@@ -39,17 +39,56 @@ set(gca,'FontSize',18);
 view(-68,-2)
 
 %% put all group regression data into 1 matrix - only need to run it once, the results are saved
+clear all; close all;% clc;
+scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 coeff_trans1 = {};
 coeff_trans2 = {};
 normalized = 0;
 groupIDs = {'CTR','CTS','VROG','NTR','NTS'};
 for i = 1:length(groupIDs)
-    load([scriptDir '/RegModelResults/GroupResults/',groupIDs{i},'_group_models_ver0' num2str(normalized) '.mat'])
+    load([scriptDir '/RegModelResults_V6/GroupResults/',groupIDs{i},'_group_models_ver0' num2str(normalized) '.mat'])
     coeff_trans1{i} = fitTrans1NoConst.Coefficients;
     coeff_trans2{i}  = fitTrans2NoConst.Coefficients;
 end
+%% plot bar plot of the group regression data
+legendLabels = {'Adapt','Within Context Switch','Multi Context Switch'};
+barplotGroupBetasHelper(coeff_trans1, groupIDs, 1, normalized, legendLabels, [scriptDir '/RegModelResults_V6/AllGroupResults/'])
+barplotGroupBetasHelper(coeff_trans2, groupIDs, 2, normalized, legendLabels, [scriptDir '/RegModelResults_V6/AllGroupResults/'])
+% task switch ~= no-adapt, env+task switch = switching
+
+%% plot 2D ellipses of group beta with CI
+clear all; close all; clc;
+scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
+coeff_trans1 = {};
+coeff_trans2 = {};
+normalized = 0;
+groupIDs = {'CTR','CTS','VROG','NTR','NTS'};
+for i = 1:length(groupIDs)
+    load([scriptDir '/RegModelResults_V7/GroupResults/',groupIDs{i},'_group_models_ver0' num2str(normalized) '.mat'])
+    coeff_trans1{1,i} = fitTrans1NoConst.Coefficients;
+    coeff_trans1{2,i} = fitTrans1NoConst.coefCI;
+    coeff_trans2{1,i}  = fitTrans2NoConst.Coefficients;
+    coeff_trans2{2,i} = fitTrans2NoConst.coefCI;
+end
 
 %% plot bar plot of the group regression data
-barplotGroupBetasHelper(coeff_trans1, groupIDs, 1, normalized, [scriptDir '/RegModelResults/AllGroupResults/'])
-barplotGroupBetasHelper(coeff_trans2, groupIDs, 2, normalized, [scriptDir '/RegModelResults/AllGroupResults/'])
+legendLabels = {'Adapt','Within Context Switch','Multi Context Switch'};
+resultDir = [scriptDir '/RegModelResults_V7/AllGroupResults/'];
+barplotGroupBetasHelper(coeff_trans1, groupIDs, 1, normalized, legendLabels, resultDir)
+barplotGroupBetasHelper(coeff_trans2, groupIDs, 2, normalized, legendLabels, resultDir)
 % task switch ~= no-adapt, env+task switch = switching
+
+%% plot 2D ellipses
+axisLabels = {'Adapt','Within Context Switch','Multi Context Switch'};
+fig1 = EllipsePlotGroupBetasHelper(coeff_trans1, groupIDs, 1, normalized, axisLabels, resultDir)
+fig2 = EllipsePlotGroupBetasHelper(coeff_trans2, groupIDs, 2, normalized, axisLabels, resultDir)
+
+%% save results after manually making the figure full screen.
+savename1 = [resultDir 'CI_betas_transition_1_normalize_' num2str(normalized)];
+savename2 = [resultDir 'CI_betas_transition_2_normalize_' num2str(normalized)];
+saveas(fig1, savename1,'png')
+saveas(fig1, savename1,'fig')
+saveas(fig1, savename1,'epsc')
+saveas(fig2, savename2,'png')
+saveas(fig2, savename2,'fig')
+saveas(fig2, savename2,'epsc')
