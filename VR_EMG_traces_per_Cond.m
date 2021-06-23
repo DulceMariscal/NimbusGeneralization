@@ -10,9 +10,9 @@ late=1;
 baseOnly=1;
 
 %% Align it
-conds={'OG base','TM base','Pos Short','Neg Short',...
+conds={'OG base','TR base','Pos Short','Neg Short',...
     'TM tied 1',...
-    'Adaptation','OG post','TM post'};
+    'Adaptation','Post 1','Post 2'};
 
 
 events={'RHS','LTO','LHS','RTO'};
@@ -25,8 +25,7 @@ lm=1:2:35;
 
 if late==1
     
-    if baseOnly==1
-        
+    if baseOnly==1 
         condlegend={'OGbase_{late}','TMbaseVR_{late}','TMBase_{late}'};
     else
         condlegend={'OGbase_{late}','TMbaseVR_{late}','TMtied_{late}','Adaptation_{late}',...
@@ -35,8 +34,7 @@ if late==1
     
 else
     condlegend={'TMbaseVR_{late}','Pos Short','Neg Short',...
-        'OGpost_{early}','TMpost_{early}'};
-    
+        'OGpost_{early}','TMpost_{early}'}; 
 end
 
 fh=figure('Units','Normalized');

@@ -4,17 +4,21 @@
 % off by setting plotAllEpoch to false
 % 3)plot checkboards for regression related epoch (regressors), save figures, 
 %run regression and save the model results.
-% - can plot and run regression for both indidual subjects or group subjects (only enabled if more than 1 subjects id provided),
+% - can plot and run regression for both indidual subjects or group subjects (set by plotGroup flag or when there are more than 1 subjects provided),
 % turn off individual subjects plotting by setting to false
+% The results are saved under
+% currentDir/RegressionAnalysis/RegModelResults_V##. If there are code
+% changes that's worth a version update, search for _V## and then update
+% the version number to avoid overwrite.
 
 %% Load data and Plot checkerboard for all conditions.
 clear; close all; clc;
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
 groupID = 'CTR';
-saveResAndFigure = true;
-plotAllEpoch = false;
-plotIndSubjects = false;
+saveResAndFigure = false;
+plotAllEpoch = true;
+plotIndSubjects = true;
 plotGroup = true;
 
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
@@ -27,6 +31,12 @@ for i = 1:n_subjects
     subID{i} = sub{i}(1:end-10);
 end
 subID
+
+if (strcmp(groupID, 'CTS') || strcmp(groupID, 'VROG'))
+    regModelVersion = 'TS'
+elseif (strcmp(groupID, 'CTR'))
+    regModelVersion = 'TR'
+end
 
 %% load and prep data
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
@@ -104,7 +114,7 @@ if plotAllEpoch
         extremaMatrixYoung(i,:,1) =  min(dataRef{1});
         extremaMatrixYoung(i,:,2) =  max(dataRef{1});
         if (saveResAndFigure)
-            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V7/'];
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V11/'];
             if not(isfolder(resDir))
                 mkdir(resDir)
             end
@@ -127,7 +137,7 @@ refEpAdaptLate = defineReferenceEpoch('Task_{Switch}',ep);
 
 refEpOGpost= defineReferenceEpoch('OGpost_{Late}',ep);
 refEp= defineReferenceEpoch('TMbase',ep);
-refPosShort = defineReferenceEpoch('NonAdapt (-\DeltaEMG_{on(+)})', ep);
+refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
 %% plot checkerboard and run regression per subject
 if plotIndSubjects
     close all;
@@ -147,7 +157,11 @@ if plotIndSubjects
         end
         %all labels should be the same, no need to save again.
         [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,refPosShort,fh,ph(1,2),ep(4,:),flip); % Noadapt (env-driven), TM base - EMG_on(+)
-        [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),ep(5,:),flip); %  OG base - TR base, env switching
+        if ~strcmp(groupID, 'CTR')
+            [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),ep(5,:),flip); %  OG base - TR base, env switching
+        else %CTR TR base is fast but post is mid, so should use mid for env transition
+            [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),refEp,flip); %  OG base - TM base mid, env switching
+        end
         [~,~,~,Data{4},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS}, transition 1 
         [~,~,~,Data{5},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %TM post VR early - OG post late, transition 2
     %     [~,~,labels,dataE{1},dataRef{1}]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
@@ -162,7 +176,7 @@ if plotIndSubjects
         set(ph(1,end),'Position',pos);
         set(gcf,'color','w');
         
-        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V7/'];
+        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V11/'];
         if (saveResAndFigure)
             if not(isfolder(resDir))
                 mkdir(resDir)
@@ -173,10 +187,9 @@ if plotIndSubjects
         
         % run regression and save results
         format compact % format loose %(default)
-        %     not normalized first, then normalized
-        runRegression_V3(Data, false, false, subID{i}, resDir, saveResAndFigure, usefft)
-        runRegression_V3(Data, true, false, subID{i}, resDir, saveResAndFigure, usefft)
-        %     (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, usefft) 
+        % not normalized first, then normalized, arugmnets order: (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, version, usefft) 
+        runRegression_V3(Data, false, false, subID{i}, resDir, saveResAndFigure, regModelVersion, usefft)
+        runRegression_V3(Data, true, false, subID{i}, resDir, saveResAndFigure, regModelVersion, usefft)
 
     end
 end
@@ -194,7 +207,11 @@ if length(subID) > 1 || plotGroup
     end
     %all labels should be the same, no need to save again.
     [~,~,~,Data{2},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,refPosShort,fh,ph(1,2),ep(4,:),flip); % Noadapt (env-driven), TM base - EMG_on(+)
-    [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),ep(5,:),flip); % OG base - TR base, env switching
+    if ~strcmp(groupID, 'CTR')
+        [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),ep(5,:),flip); % OG base - TR base, env switching
+    else %CTR TR base is fast but post is mid, so should use mid for env transition
+        [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),refEp,flip); % OG base - TR base, env switching
+    end
     [~,~,~,Data{4},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS}, transition 1
     [~,~,~,Data{5},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %TM post VR early - OG post late, transition 2
     %     [~,~,labels,dataE{1},dataRef{1}]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
@@ -209,7 +226,7 @@ if length(subID) > 1 || plotGroup
     set(ph(1,end),'Position',pos);
     set(gcf,'color','w');
     
-    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V7/GroupResults/'];
+    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V11/GroupResults/'];
     if (saveResAndFigure)    
         if not(isfolder(resDir))
             mkdir(resDir)
@@ -220,8 +237,7 @@ if length(subID) > 1 || plotGroup
 
     % run regression and save results
     format compact % format loose %(default)
-%     not normalized first, then normalized
-    runRegression_V3(Data, false, true, groupID, resDir, saveResAndFigure, usefft)
-    runRegression_V3(Data, true, true, groupID, resDir, saveResAndFigure, usefft)
-%     (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, usefft) 
+    % not normalized first, then normalized, arugmnets order: (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, version, usefft) 
+    runRegression_V3(Data, false, true, groupID, resDir, saveResAndFigure, regModelVersion, usefft)
+    runRegression_V3(Data, true, true, groupID, resDir, saveResAndFigure, regModelVersion, usefft)
 end

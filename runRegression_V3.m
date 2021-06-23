@@ -1,4 +1,4 @@
-function runRegression_V3(Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, usefft) 
+function runRegression_V3(Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, version, usefft) 
 % perform regression anlysis V2 (see grant one note: Regression discussion (two transitions)
 % printout the regression results and save the results to destination
 % folders (if saveResAndFigure flag is on)
@@ -16,15 +16,23 @@ function runRegression_V3(Data, normalizeData, isGroupData, dataId, resDir, save
 % saved
 % - resDir: String, the directory to save the results figures, OPTIONAL if
 % saveResAndFigure is false.
+% - version: OPTIONAL, string (case insensitive)), representing which regression version to use, allowed strings: 'default' =
+% with 3 regressors (see Alterntive Regression page on grant notebook), 'tr' =
+% 2 regressors version for training group, 'ts' = 2 regressors version for
+% testing group (see Separate regression models to characterize switching within and across environments from Grant Notebook)
 % - usefft: OPTIONAL, boolean flag indicating if should use fft of the data to
 % approximate deltaOn-, default false.
 % 
 % ----- Returns ------
 %  none
 % 
-    if nargin < 7 || isempty(usefft)
-        usefft = false; %default faulse
+    if nargin < 7 || isempty(version)
+        version = 'default'; %default 1
     end
+    if nargin < 8 || isempty(usefft)
+        usefft = false; %default false
+    end
+    
     if ~isGroupData
         for i = 1:size(Data,2)
             Data{i} = reshape(Data{i}, [],1); %make it a column vector
@@ -49,33 +57,51 @@ function runRegression_V3(Data, normalizeData, isGroupData, dataId, resDir, save
         end
     end
 
+    %define model based on the version, version has to fall in 1 of the 3
+    %categories, otherwise there is a bug in the code.
+    if strcmpi(version,'default') %default, 3 regressors version
+        trans1Model = 'Trans1 ~ WithinContextSwitch+MultiContextSwitch+Adapt-1';
+        trans2Model = 'Trans2 ~ WithinContextSwitch+MultiContextSwitch+Adapt-1';
+    elseif strcmpi(version,'tr') %training group
+        trans1Model = 'Trans1 ~ WithinContextSwitch+Adapt-1';
+        trans2Model = 'Trans2 ~ MultiContextSwitch+Adapt-1';
+    elseif strcmpi(version,'ts') %testing group
+        trans1Model = 'Trans1 ~ MultiContextSwitch+Adapt-1';
+        trans2Model = 'Trans2 ~ MultiContextSwitch+Adapt-1';
+    end
+    
+    
     %%% Run regression analysis V2
     tableData=table(Data{1},Data{2},Data{3},Data{4},Data{5},'VariableNames',{'Adapt', 'WithinContextSwitch', 'MultiContextSwitch', 'Trans1', 'Trans2'});
-    fitTrans1NoConst=fitlm(tableData,'Trans1 ~ WithinContextSwitch+MultiContextSwitch+Adapt-1')%exclude constant
+    fitTrans1NoConst=fitlm(tableData,trans1Model)%exclude constant
     Rsquared = fitTrans1NoConst.Rsquared
-
+    %compute adaptation and switch index
+    beta1_index = computeBetaIndex(fitTrans1NoConst);
+    
     fprintf('\n\n')
 
-    fitTrans2NoConst=fitlm(tableData,'Trans2 ~ WithinContextSwitch+MultiContextSwitch+Adapt-1')%exclude constant
+    fitTrans2NoConst=fitlm(tableData,trans2Model)%exclude constant
     Rsquared = fitTrans2NoConst.Rsquared
-    
+    %compute adaptation and switch index
+    beta2_index = computeBetaIndex(fitTrans2NoConst);
+
     %compute and print out relative vector norm to assess the length
     %difference between regressors
     fprintf('\n\n')
     vec_norm = vecnorm(fitTrans1NoConst.Variables{:,:});
     relNom = normalize(vec_norm,'norm',1)
-    
+        
     if saveResAndFigure
         if not(isfolder(resDir))
             mkdir(resDir)
         end
         if ~isGroupData
-            save([resDir dataId 'models_ver' num2str(usefft) num2str(normalizeData)], 'fitTrans1NoConst','fitTrans2NoConst')
+            save([resDir dataId 'models_ver' num2str(usefft) num2str(normalizeData)], 'fitTrans1NoConst','fitTrans2NoConst','beta1_index','beta2_index','relNom');
         else
             %version convention: first digit: use first or last stride, 2nd digit:
             %use fft or not, 3rd digit: normalize or not, i.e., ver_101 = use first
             %20 strides, no fft and normalized data
-            save([resDir dataId '_group_models_ver' num2str(usefft) num2str(normalizeData)], 'fitTrans1NoConst','fitTrans2NoConst')
+            save([resDir dataId '_group_models_ver' num2str(usefft) num2str(normalizeData)], 'fitTrans1NoConst','fitTrans2NoConst','beta1_index','beta2_index','relNom');
         end
     end
 end
