@@ -1,4 +1,4 @@
-function hfig = EllipsePlotGroupBetasHelper(coeff, groupIDs, transitionNum, normalized, axisNames, resultDir)
+function hfig = EllipsePlotGroupBetasHelper(coeff, groupIDs, transitionNum, normalized, axisNames, xRange, yRange, resultDir, TRorTS)
 % plot coefficieints given in the arguments in bar plots grouped by subject
 % group, and error bar indicates group regression fit SE.
 % ----- Arguments ------
@@ -12,9 +12,20 @@ function hfig = EllipsePlotGroupBetasHelper(coeff, groupIDs, transitionNum, norm
 % y axis labels)
 %
 % - normalized: INTEGER represents if the data is normalized (1) or not (0)
+% 
+% - axisNames: A cell array of strings to be used as the x and y
+% axis names. Pass empty ('') if want to use default name. Default name the row header of the coefficients estimation
+% table. 
+% 
+% - xRange: A row vector of the xaxis range for all figures, in order [lowerAxisLimit, higherAxisLimit]  
 %
+% - yRange: A row vector of the y-axis range for all figures, in order [lowerAxisLimit, higherAxisLimit]  
+% 
 % - resultDir: OPTIONAL. the directory to save the results figures, a
-% string
+% string. If not given or empty, will not save results.
+% 
+% -TRorTS: OPTIONAL. A string rep of the sub group name, used as prefix of
+% the file names to save the results. Default to empty (1 name for the whole 5 groups, no subdivisions)
 % 
 % ----- Returns ------
 %  hfig : the plot handle
@@ -22,22 +33,20 @@ function hfig = EllipsePlotGroupBetasHelper(coeff, groupIDs, transitionNum, norm
 
     num_coeff = length(coeff{1}.Estimate);
     coeff_combos = nchoosek(1:num_coeff,2);
-
-
-%     EllipsePlotGroupBetasHelper(coeff_trans1, groupIDs, coeff_combos(row,:), 1, normalized, axisLabels, resultDir);
-%     EllipsePlotGroupBetasHelper(coeff_trans2, groupIDs, coeff_combos(row,:), 2, normalized,axisLabels, resultDir);
-
-    
-    
+  
     colors = {'#0072BD','#D95319','#EDB120','#7E2F8E','#77AC30','#4DBEEE','#A2142F'};
     num_groups = length(groupIDs);
     theta = 0 : 0.01 : 2*pi;
-    figure;
-    hfig = tiledlayout(1,3, 'Padding', 'none', 'TileSpacing', 'compact'); 
-%     hfig = subplot('Position', get(0, 'Screensize'));
+    
+    if (size(coeff_combos,1) > 1)
+        figure;
+        hfig = tiledlayout(1,size(coeff_combos,1), 'Padding', 'none', 'TileSpacing', 'compact'); 
+    else
+        hfig = figure('Position', get(0, 'Screensize'));
+    end
+    
     for row  = 1:size(coeff_combos,1)
         coeffIdx = coeff_combos(row,:);
-%         subplot(1,3,row); %,'Position', get(0, 'Screensize')
         nexttile;
         hold on;
         axis square;
@@ -49,6 +58,7 @@ function hfig = EllipsePlotGroupBetasHelper(coeff, groupIDs, transitionNum, norm
             x = CIRadius_x * cos(theta) + center(1);
             y = CIRadius_y * sin(theta) + center(2);
             plot(x, y, 'LineWidth', 3,'Color',colors{j});
+            
         end
 
         if isempty(axisNames)
@@ -58,30 +68,32 @@ function hfig = EllipsePlotGroupBetasHelper(coeff, groupIDs, transitionNum, norm
             xlabel(['\beta ' axisNames{coeffIdx(1)}]);
             ylabel(['\beta ' axisNames{coeffIdx(2)}]);
         end
-        if normalized
-            set(gca,'XLim',[-0.3,1],'YLim',[-1,1]);
-        else
-            set(gca,'XLim',[-0.2,0.6],'YLim',[-1.5,1.5]);
-        end
-        
         set(gca,'FontSize',22);
+        set(gca,'XLim',xRange,'YLim',yRange);
+    end        
+    
+    if (size(coeff_combos,1) > 1) 
+        sgtitle(['Regression Coefficients 95% CI at Transition ' num2str(transitionNum) ' Normalized ' num2str(normalized)]);
+% %        TODO: this looks ugly, font size very small.
+    else
+        title(['Regression Coefficients 95% CI at Transition ' num2str(transitionNum) ' Normalized ' num2str(normalized)]);
     end
     
-    sgtitle(['Regression Coefficients 95% CI at Transition ' num2str(transitionNum)]);
     set(gca,'FontSize',22);
 
     legendLabels = groupIDs;
     legend(legendLabels);
 
-    if nargin < 6 || isempty(resultDir) %no result directory provided, avoid saving
+    if ~exist('resultDir', 'var')  || isempty(resultDir) %no result directory provided, avoid saving
         fprintf('No result directory provided. Figures not auto-saved.\n')
-        [resultDir 'CI_betas_',num2str(coeffIdx),'_transition_', num2str(transitionNum), '_normalize_' num2str(normalized) '.png']
-        
     else 
         if not(isfolder(resultDir))
             mkdir(resultDir)
         end
-        saveas(hfig,[resultDir 'CI_betas_',num2str(coeffIdx),'_transition_', num2str(transitionNum), '_normalize_' num2str(normalized) '.png'],'png')
-        saveas(hfig,[resultDir 'CI_betas_',num2str(coeffIdx),'_transition_', num2str(transitionNum), '_normalize_' num2str(normalized)],'epsc')
+        if ~exist('TRorTS', 'var')
+            TRorTS = ''; %default to empty (1 name for the whole 5 groups, no subdivisions)
+        end
+        saveas(hfig,[resultDir TRorTS 'CI_betas_transition_', num2str(transitionNum), '_normalize_' num2str(normalized) '.png'],'png')
+        saveas(hfig,[resultDir TRorTS 'CI_betas_transition_', num2str(transitionNum), '_normalize_' num2str(normalized)],'epsc')
     end
 end

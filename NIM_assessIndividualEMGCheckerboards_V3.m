@@ -6,6 +6,10 @@
 %run regression and save the model results.
 % - can plot and run regression for both indidual subjects or group subjects (only enabled if more than 1 subjects id provided),
 % turn off individual subjects plotting by setting to false
+% The results are saved under
+% currentDir/RegressionAnalysis/RegModelResults_V##. If there are code
+% changes that's worth a version update, search for _V## and then update
+% the version number to avoid overwrite.
 
 %% Update params file condition names to match
 % changeCondName('VROG_03',{'TM base', 'OG post','TM post'},{'TR base','Post 1','Post 2'})
@@ -21,10 +25,11 @@ clear; close all; clc;
 % sub={'YL02params'};
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'NTS'; % groupID to grab all subjects from the same group. If only want to grab 1 subject, specify subject ID.
-saveResAndFigure = true;
+groupID = 'NTR'; % groupID to grab all subjects from the same group. If only want to grab 1 subject, specify subject ID.
+saveResAndFigure = false;
 plotAllEpoch = false;
-plotIndSubjects = false;
+plotIndSubjects = true;
+plotGroup = true; %will always plot group if more than 1 subjects provided
 
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 files = dir ([scriptDir '/data/' groupID '*params.mat']);
@@ -36,6 +41,12 @@ for i = 1:n_subjects
     subID{i} = sub{i}(1:end-10);
 end
 subID
+
+if (strcmp(groupID, 'NTS'))
+    regModelVersion = 'TS'
+elseif (strcmp(groupID, 'NTR'))
+    regModelVersion = 'TR'
+end
 
 %% load and prepare data. 
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
@@ -116,10 +127,8 @@ if plotAllEpoch
 
         set(gcf,'color','w');
 
-%         extremaMatrixYoung(i,:,1) =  min(dataRef{1});
-%         extremaMatrixYoung(i,:,2) =  max(dataRef{1});
         if (saveResAndFigure)
-            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V7/'];
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V11/'];
             if not(isfolder(resDir))
                 mkdir(resDir)
             end
@@ -176,7 +185,7 @@ if plotIndSubjects || length(subID) == 1
 %         extremaMatrixYoung(i,:,1) =  min(dataRef2);
 %         extremaMatrixYoung(i,:,2) =  max(dataRef2);
 
-        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V7/'];
+        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V11/'];
         if saveResAndFigure
             if not(isfolder(resDir))
                 mkdir(resDir)
@@ -186,14 +195,13 @@ if plotIndSubjects || length(subID) == 1
 
         % run regression and save results
         format compact % format loose %(default)
-        %     not normalized first, then normalized
-        runRegression_V3(Data, false, false, subID{i}, resDir, saveResAndFigure, usefft)
-        runRegression_V3(Data, true, false, subID{i}, resDir, saveResAndFigure, usefft)
-        %     (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, usefft) 
+        % not normalized first, then normalized, arugmnets order: (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, version, usefft) 
+        runRegression_V3(Data, false, false, subID{i}, resDir, saveResAndFigure, regModelVersion, usefft)
+        runRegression_V3(Data, true, false, subID{i}, resDir, saveResAndFigure, regModelVersion, usefft)
     end
 end
 %% plot checkerboard per group
-if length(subID) > 1
+if length(subID) > 1 || plotGroup
     fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
     ph=tight_subplot(1,5,[.03 .005],.04,.04);
     flip=true;
@@ -222,7 +230,7 @@ if length(subID) > 1
 
     set(gcf,'color','w');
     
-    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V7/GroupResults/'];
+    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V11/GroupResults/'];
     if saveResAndFigure    
         if not(isfolder(resDir))
             mkdir(resDir)
@@ -232,10 +240,7 @@ if length(subID) > 1
     
     % run regression and save results
     format compact % format loose %(default)
-%     not normalized first, then normalized
-    runRegression_V3(Data, normalizeData, true, groupID, resDir, saveResAndFigure, usefft)
-    runRegression_V3(Data, true, true, groupID, resDir, saveResAndFigure, usefft)
-%     (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, usefft) 
+    % not normalized first, then normalized, arugmnets order: (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, version, usefft) 
+    runRegression_V3(Data, normalizeData, true, groupID, resDir, saveResAndFigure, regModelVersion, usefft)
+    runRegression_V3(Data, true, true, groupID, resDir, saveResAndFigure, regModelVersion, usefft)
 end
-% TODO: handling nan value in regression
-% TODO: flip the checkboard for easier visual...
