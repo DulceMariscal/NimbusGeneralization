@@ -42,9 +42,10 @@ for i = 1:n_subjects
 end
 subID
 
-if (strcmp(groupID, 'NTS'))
+regModelVersion = 'default'
+if (contains(groupID, 'NTS'))
     regModelVersion = 'TS'
-elseif (strcmp(groupID, 'NTR'))
+elseif (contains(groupID, 'NTR'))
     regModelVersion = 'TR'
 end
 
@@ -90,9 +91,9 @@ newLabelPrefix = regexprep(newLabelPrefix,'_s','s');
 %% remove bad muscles
 %NTS: remove sHIP and sVL
 % NTR: remove fTFL
-if strcmp(groupID, 'NTR')
+if contains(groupID, 'NTR')
     badMuscleNames = {'fTFLs'};
-elseif strcmp(groupID, 'NTS')
+elseif contains(groupID, 'NTS')
     badMuscleNames = {'sHIPs','sVLs'};
 end
 if exist('badMuscleNames','var') %check if badMuscleNames is defined, if so update the labels list.
