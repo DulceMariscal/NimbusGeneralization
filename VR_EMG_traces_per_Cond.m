@@ -1,9 +1,9 @@
 %%Traces from example subject to show how data is summarized
 %% Load data
 % load('/Volumes/Users/Dulce/R01_Nimbus2021/VROG_Devon/VrG_Devon.mat')
-subID = 'CTR_01';
-scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
-load([scriptDir '/data/' subID])
+% subID = 'CTR_01';
+% scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
+% load([scriptDir '/data/' subID])
 %% Set period to plot
 close all;
 late=1;
@@ -26,15 +26,15 @@ lm=1:2:35;
 if late==1
     
     if baseOnly==1 
-        condlegend={'OGbase_{late}','TMbaseVR_{late}','TMBase_{late}'};
+        condlegend={'OGbase_{late}','TRbase_{late}','TMtied1_{late}'};
     else
-        condlegend={'OGbase_{late}','TMbaseVR_{late}','TMtied_{late}','Adaptation_{late}',...
-            'OGpost_{late}','TMpost_{late}'};
+        condlegend={'OGbase_{late}','TRbase_{late}','TMtied1_{late}','Adaptation_{late}',...
+            'Post1_{late}','Post2_{late}'};
     end
     
 else
-    condlegend={'TMbaseVR_{late}','Pos Short','Neg Short',...
-        'OGpost_{early}','TMpost_{early}'}; 
+    condlegend={'TRbase_{late}','Pos Short','Neg Short',...
+        'Post1_{early}','Post2_{early}'}; 
 end
 
 fh=figure('Units','Normalized');
