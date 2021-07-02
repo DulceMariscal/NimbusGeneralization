@@ -8,16 +8,22 @@ if leg=='R'
 elseif leg=='L'
     data=expData.getAlignedField('procEMGData',cond,events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle]});
 else
-    warning('leg input is either L or R')
+    error('leg input is either L or R')
 end
 
 if late==1
     data=data.getPartialStridesAsATS(size(data.Data,3)-strides:size(data.Data,3));
     
 elseif late==0
-    data=data.getPartialStridesAsATS(1:strides);
+    if size(data.Data,3)>strides
+        
+        data=data.getPartialStridesAsATS(1:strides);
+    else
+        data=data.getPartialStridesAsATS(1:size(data.Data,3));
+        warning(strcat([cond{1}, ' does not have ', num2str(strides),' strides']))
+    end
 else
-    error('Input the type of data that you want early=1')
+    error('Input the type of data that you want late=1')
 end
     
 
