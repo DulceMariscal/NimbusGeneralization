@@ -7,7 +7,7 @@
 %% Set period to plot
 close all;
 late=1;
-baseOnly=1;
+baseOnly=0;
 
 %% Align it
 conds={'OG base','TR base','Pos Short','Neg Short',...
@@ -47,8 +47,8 @@ for m=1:length(muscle)
     LOGBase=expData.getAlignedField('procEMGData',conds(1),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
     
     %TM base VR
-    RTMBaseVR=expData.getAlignedField('procEMGData',conds(2),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
-    LTMBaseVR=expData.getAlignedField('procEMGData',conds(2),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
+    RTRbase=expData.getAlignedField('procEMGData',conds(2),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
+    LTRbase=expData.getAlignedField('procEMGData',conds(2),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
     
     %Short Split + No VR
     RPosi=expData.getAlignedField('procEMGData',conds(3),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
@@ -67,12 +67,12 @@ for m=1:length(muscle)
     LAdap=expData.getAlignedField('procEMGData',conds(6),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
     
     %OG post NO VR
-    ROGPost=expData.getAlignedField('procEMGData',conds(7),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
-    LOGPost=expData.getAlignedField('procEMGData',conds(7),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
+    RPost1=expData.getAlignedField('procEMGData',conds(7),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
+    LPost1=expData.getAlignedField('procEMGData',conds(7),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
     
     %TMpost VR
-    RTMPost=expData.getAlignedField('procEMGData',conds(8),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
-    LTMPost=expData.getAlignedField('procEMGData',conds(8),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
+    RPost2=expData.getAlignedField('procEMGData',conds(8),events,alignmentLengths).getPartialDataAsATS({['R' muscle{m}]});
+    LPost2=expData.getAlignedField('procEMGData',conds(8),events([3,4,1,2]),alignmentLengths).getPartialDataAsATS({['L' muscle{m}]});
     
     % Create plots
     % close all;
@@ -86,18 +86,18 @@ for m=1:length(muscle)
             case 1
                 
                 %Late
-                OGbase_late=ROGBase.getPartialStridesAsATS(find(ROGBase.Data(end-40:end)));
-                TMbaseVR_late=RTMBaseVR.getPartialStridesAsATS(find(RTMBaseVR.Data(end-40:end)));
-                TMBase_late=RTMBase.getPartialStridesAsATS(find(RTMBase.Data(end-40:end)));
-                Adaptation_late=RAdap.getPartialStridesAsATS(find(RAdap.Data(end-40:end)));
-                TMpost_Late=RTMPost.getPartialStridesAsATS(find(RTMPost.Data(end-40:end)));
-                OGPost_Late=ROGPost.getPartialStridesAsATS(find(ROGPost.Data(end-40:end)));
+                OGbase_late=ROGBase.getPartialStridesAsATS(size(ROGBase.Data,3)-40:size(ROGBase.Data,3));
+                TRbase_late=RTRbase.getPartialStridesAsATS(size(RTRbase.Data,3)-40:size(RTRbase.Data,3));
+                TMBase_late=RTMBase.getPartialStridesAsATS(size(RTMBase.Data,3)-40:size(RTMBase.Data,3));
+                Adaptation_late=RAdap.getPartialStridesAsATS(size(RAdap.Data,3)-40:size(RAdap.Data,3));
+                Post2_Late=RPost2.getPartialStridesAsATS(size(RPost2.Data,3)-40:size(RPost2.Data,3));
+                Post1_Late=RPost1.getPartialStridesAsATS(size(RPost1.Data,3)-40:size(RPost1.Data,3));
                 
                 %Early
-                OGPost_early=ROGPost.getPartialStridesAsATS(find(ROGPost.Data(1:30)));
-                Pos=RPosi.getPartialStridesAsATS(find(RPosi.Data(1:30)));
-                Neg=RNeg.getPartialStridesAsATS(find(RNeg.Data(1:30)));
-                TMPost_early=RTMPost.getPartialStridesAsATS(find(RTMPost.Data(1:30)));
+                Post1_early=RPost1.getPartialStridesAsATS(1:30);
+                Pos=RPosi.getPartialStridesAsATS(1:30);
+                Neg=RNeg.getPartialStridesAsATS(1:30);
+                Post2_early=RPost2.getPartialStridesAsATS(1:30);
                 
                 
                 
@@ -105,25 +105,25 @@ for m=1:length(muscle)
             case 2
                 
                 %Late
-                OGbase_late=LOGBase.getPartialStridesAsATS(find(LOGBase.Data(end-40:end)));
-                TMbaseVR_late=LTMBaseVR.getPartialStridesAsATS(find(LTMBaseVR.Data(end-40:end)));
-                TMBase_late=LTMBase.getPartialStridesAsATS(find(LTMBase.Data(end-40:end)));
-                Adaptation_late=LAdap.getPartialStridesAsATS(find(LAdap.Data(end-40:end)));
+                OGbase_late=LOGBase.getPartialStridesAsATS(size(LOGBase.Data,3)-40:size(LOGBase.Data,3));
+                TRbase_late=LTRbase.getPartialStridesAsATS(size(LTRbase.Data,3)-40:size(LTRbase.Data,3));
+                TMBase_late=LTMBase.getPartialStridesAsATS(size(LTMBase.Data,3)-40:size(LTMBase.Data,3));
+                Adaptation_late=LAdap.getPartialStridesAsATS(size(LAdap.Data,3)-40:size(LAdap.Data,3));
                 
                 %                 if m==14
                 %
                 %                 else
-                OGPost_Late=LOGPost.getPartialStridesAsATS(find(LOGPost.Data(end-40:end)));
-                TMpost_Late=LTMPost.getPartialStridesAsATS(find(LTMPost.Data(end-40:end)));
+                Post1_Late=LPost1.getPartialStridesAsATS(size(LPost1.Data,3)-40:size(LPost1.Data,3));
+                Post2_Late=LPost2.getPartialStridesAsATS(size(LPost2.Data,3)-40:size(LPost2.Data,3));
                 %                 end
                 
                 
                 
                 %Early
-                Pos=LPosi.getPartialStridesAsATS(find(LPosi.Data(1:30)));
-                Neg=LNeg.getPartialStridesAsATS(find(LNeg.Data(1:30)));
-                OGPost_early=LOGPost.getPartialStridesAsATS(find(LOGPost.Data(1:30)));
-                TMPost_early=LTMPost.getPartialStridesAsATS(find(LTMPost.Data(1:30)));
+                Pos=LPosi.getPartialStridesAsATS(1:30);
+                Neg=LNeg.getPartialStridesAsATS(1:30);
+                Post1_early=LPost1.getPartialStridesAsATS(1:30);
+                Post2_early=LPost2.getPartialStridesAsATS(1:30);
                 %                 if m==14
                 %
                 %                 else
@@ -135,21 +135,21 @@ for m=1:length(muscle)
                 
         end
         
-        norm2=nanmean(nanmax(squeeze(TMbaseVR_late.Data)));
+        norm2=nanmean(nanmax(squeeze(TRbase_late.Data)));
         
         %Late
         OGbase_late.Data=bsxfun(@rdivide,OGbase_late.Data,norm2);
-        TMbaseVR_late.Data=bsxfun(@rdivide,TMbaseVR_late.Data,norm2);
+        TRbase_late.Data=bsxfun(@rdivide,TRbase_late.Data,norm2);
         TMBase_late.Data=bsxfun(@rdivide,TMBase_late.Data,norm2);
         Adaptation_late.Data=bsxfun(@rdivide,Adaptation_late.Data,norm2);
-        OGPost_Late.Data=bsxfun(@rdivide,OGPost_Late.Data,norm2);
-        TMpost_Late.Data=bsxfun(@rdivide,TMpost_Late.Data,norm2);
+        Post1_Late.Data=bsxfun(@rdivide,Post1_Late.Data,norm2);
+        Post2_Late.Data=bsxfun(@rdivide,Post2_Late.Data,norm2);
         
         %             Early
         Pos.Data=bsxfun(@rdivide,Pos.Data,norm2);
         Neg.Data=bsxfun(@rdivide,Neg.Data,norm2);
-        OGPost_early.Data=bsxfun(@rdivide,OGPost_early.Data,norm2);
-        TMPost_early.Data=bsxfun(@rdivide,TMPost_early.Data,norm2);
+        Post1_early.Data=bsxfun(@rdivide,Post1_early.Data,norm2);
+        Post2_early.Data=bsxfun(@rdivide,Post2_early.Data,norm2);
         %
         condColors=colorOrder;
         % ph=[];
@@ -174,25 +174,25 @@ for m=1:length(muscle)
         if late==1
             if baseOnly==1
                 OGbase_late.plot(fh,ph,condColors(1,:),[],0,[-49:0],prc,true);
-                TMbaseVR_late.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
+                TRbase_late.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
                 TMBase_late.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
             else
                 OGbase_late.plot(fh,ph,condColors(1,:),[],0,[-49:0],prc,true);
-                TMbaseVR_late.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
+                TRbase_late.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
                 TMBase_late.plot(fh,ph,condColors(5,:),[],0,[-49:0],prc,true);
                 Adaptation_late.plot(fh,ph,condColors(6,:),[],0,[-49:0],prc,true);
-                OGPost_Late.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);
-                TMpost_Late.plot(fh,ph,condColors(8,:),[],0,[-49:0],prc,true);
+                Post1_Late.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);
+                Post2_Late.plot(fh,ph,condColors(8,:),[],0,[-49:0],prc,true);
                 
                 
             end
             %
         else
-            TMbaseVR_late.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
+            TRbase_late.plot(fh,ph,condColors(2,:),[],0,[-49:0],prc,true);
             Pos.plot(fh,ph,condColors(9,:),[],0,[-49:0],prc,true);
             Neg.plot(fh,ph,condColors(4,:),[],0,[-49:0],prc,true);
-            OGPost_early.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);
-            TMPost_early.plot(fh,ph,condColors(8,:),[],0,[-49:0],prc,true);
+            Post1_early.plot(fh,ph,condColors(7,:),[],0,[-49:0],prc,true);
+            Post2_early.plot(fh,ph,condColors(8,:),[],0,[-49:0],prc,true);
         end
         axis tight
         ylabel('')
@@ -214,12 +214,12 @@ legend(ll(end:-1:1),condlegend{:})
 set(gcf,'color','w');
 
 %% save figures
-if late
-    if baseOnly
-        saveas(fh, [scriptDir '/EMGTraces/' subID '_BaseLate.png']);
-    else
-        saveas(fh, [scriptDir '/EMGTraces/' subID '_Late.png']);
-    end
-else
-    saveas(fh, [scriptDir '/EMGTraces/' subID '_Early.png']);
-end
+% if late
+%     if baseOnly
+%         saveas(fh, [scriptDir '/EMGTraces/' subID '_BaseLate.png']);
+%     else
+%         saveas(fh, [scriptDir '/EMGTraces/' subID '_Late.png']);
+%     end
+% else
+%     saveas(fh, [scriptDir '/EMGTraces/' subID '_Early.png']);
+% end
