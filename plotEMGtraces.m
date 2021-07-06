@@ -1,4 +1,22 @@
 function fh=plotEMGtraces(expData,conds,muscle,late,strides)
+%% Plot the EMG ttraces for the Nimbus generalization project
+%
+%INPUTS: 
+    %expData - experimentData file, we are going to
+    %use a timeseries approach
+    %conds - Conditions that you want to plot ex: 'TM base'
+    %muscle - list of the muscles that you want to plot 
+    %late - 1 if you want to plot the last strides 0 if yo uwant to plot
+    %tte initial strides 
+    %strides - number of strides that you want to plot 
+    
+%OUTPUT:
+    % fh - figure handle 
+    
+%EXAMPLE: 
+    %fh=plotEMGtraces(expData,{'TM base'},{'TA'},1,40);
+    %This will plot the average of the last 40 strides of for the TA muscle
+    %during treadmill baseline 
 %% Plot config
 %this is the setting for a 5x6 subplot
 row=5;
