@@ -53,7 +53,7 @@ fh=plotEMGtraces(expData,conds,muscle,late,strides);
 % end
 
 
-%%
+%% Old code use as references to understand the functions above
 
 % late=1;
 % baselate=0;
