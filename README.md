@@ -1,2 +1,2 @@
 # Nimbus Generalization
- Data Analysis for nimbus generalization project 
+ Data analysis of the muscle activity data from nimbus generalization project 
