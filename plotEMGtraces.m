@@ -20,6 +20,7 @@ function fh=plotEMGtraces(expData,conds,muscle,late,strides,normalize,normCond)
 %This will plot the average of the last 40 strides of for the TA muscle
 %during treadmill baseline
 %% Plot config
+
 %this is the setting for a 5x6 subplot
 row=5;
 colum=6;
@@ -28,11 +29,8 @@ colum=6;
 % late=0;
 % baselate=1;
 % missing = [];
-%% Align iat
-
-% muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU','HIP'};
+%% 
 if nargin<6 || isempty(normalize)
-    
     normalize=0;
 end
 
@@ -43,22 +41,9 @@ end
 
 lm=1:2:2*length(muscle)+1;
 if late==1
-    %     strides=40;
-    %     if baselate==1
-    %         conds={'OG base','TM tied 1','TR Base'};
-    % %         condlegend=strcat(repmat(conds,1,1),'_{late}');
-    %     else
-    %         conds={'OG base','TM tied 1','TR Base','Adaptation',...
-    %             'Post 1','Post 2'};
-    %
-    %     end
     condlegend=strcat(repmat(conds,1,1),'_{late}');
 else
-    %     strides=30;
-    %     conds={'TR base','Pos short','Neg Short',...
-    %         'Post 1','Post 2'};
-    %     condlegend={'TRbase','Pos Short','Neg Short',...
-    %         'Post1','Post2'};
+
     condlegend=strcat(repmat(conds,1,1),'_{early}');
 end
 
