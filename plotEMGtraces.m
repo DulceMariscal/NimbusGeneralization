@@ -31,7 +31,7 @@ colum=6;
 %% Align iat
 
 % muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU','HIP'};
-if nargin<5 || isempty(normalize)
+if nargin<6 || isempty(normalize)
     
     normalize=0;
 end
