@@ -7,7 +7,7 @@ function fh=plotEMGtraces(expData,conds,muscle,late,strides)
     %conds - Conditions that you want to plot ex: 'TM base'
     %muscle - list of the muscles that you want to plot 
     %late - 1 if you want to plot the last strides 0 if yo uwant to plot
-    %tte initial strides 
+    %the initial strides 
     %strides - number of strides that you want to plot 
     
 %OUTPUT:
