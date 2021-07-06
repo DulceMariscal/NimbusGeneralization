@@ -1,22 +1,24 @@
-function fh=plotEMGtraces(expData,conds,muscle,late,strides)
+function fh=plotEMGtraces(expData,conds,muscle,late,strides,normalize,normCond)
 %% Plot the EMG ttraces for the Nimbus generalization project
 %
-%INPUTS: 
-    %expData - experimentData file, we are going to
-    %use a timeseries approach
-    %conds - Conditions that you want to plot ex: 'TM base'
-    %muscle - list of the muscles that you want to plot 
-    %late - 1 if you want to plot the last strides 0 if yo uwant to plot
-    %the initial strides 
-    %strides - number of strides that you want to plot 
-    
+%INPUTS:
+%expData - experimentData file, we are going to
+%use a timeseries approach
+%conds - Conditions that you want to plot ex: 'TM base'
+%muscle - list of the muscles that you want to plot
+%late - 1 if you want to plot the last strides 0 if yo uwant to plot
+%the initial strides
+%strides - number of strides that you want to plot
+%normalize - 1 to normalize the data 
+%normCond - Condtions by which to normalize the data
+
 %OUTPUT:
-    % fh - figure handle 
-    
-%EXAMPLE: 
-    %fh=plotEMGtraces(expData,{'TM base'},{'TA'},1,40);
-    %This will plot the average of the last 40 strides of for the TA muscle
-    %during treadmill baseline 
+% fh - figure handle
+
+%EXAMPLE:
+%fh=plotEMGtraces(expData,{'TM base'},{'TA'},1,40);
+%This will plot the average of the last 40 strides of for the TA muscle
+%during treadmill baseline
 %% Plot config
 %this is the setting for a 5x6 subplot
 row=5;
@@ -29,6 +31,15 @@ colum=6;
 %% Align iat
 
 % muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU','HIP'};
+if nargin<5 || isempty(normalize)
+    
+    normalize=0;
+end
+
+if normalize==1 && isempty(normCond)   
+   error('You need to define which conditions to use for normalization')
+end
+
 
 lm=1:2:2*length(muscle)+1;
 if late==1
@@ -80,15 +91,22 @@ for m=1:length(muscle)
             
             if l==1
                 data=getDataEMGtraces(expData,muscle{m},conds(c),leg{l},late,strides);
-                norm=getDataEMGtraces(expData,muscle{m},{'TR base'},leg{l},1,40);
+                if normalize==1
+                    norm=getDataEMGtraces(expData,muscle{m},normCond,leg{l},1,40);
+                end
                 tit=['R' muscle{m}];
             elseif l==2
                 data=getDataEMGtraces(expData,muscle{m},conds(c),leg{l},late,strides);
-                norm=getDataEMGtraces(expData,muscle{m},{'TR base'},leg{l},1,40);
+                if normalize==1
+                    norm=getDataEMGtraces(expData,muscle{m},normCond,leg{l},1,40);
+                end
                 tit=['L' muscle{m}];
             end
-            norm=nanmean(nanmax(squeeze(norm.Data)));
-            data.Data=bsxfun(@rdivide,data.Data,norm);
+            
+            if normalize==1
+                norm=nanmean(nanmax(squeeze(norm.Data)));
+                data.Data=bsxfun(@rdivide,data.Data,norm);
+            end
             ph=subplot(row,colum,lm(m)+l-1);
             data.plot(fh,ph,condColors(c,:),[],0,[-49:0],prc,true);
             
