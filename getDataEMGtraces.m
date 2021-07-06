@@ -1,5 +1,25 @@
 function [data]=getDataEMGtraces(expData,muscle,cond,leg,late,strides)
+%% get time series EMG data 
+% This function returns the EMG as a time series
+%
+%INPUTS: 
+    %expData - file to extract the data 
+    %muscle - list with the muscle that you want to get data for 
+    %cond - condition of interest
+    %leg - leg of interest 
+    %late - 1 if you want to plot the last strides 0 if yo uwant to plot
+    %the initial strides 
+    %strides - number of strides that you want to plot 
+ %OUTPUT: 
+    %data - Timeseries of the data
+%
+%EXAMPLE: 
+    %data=getDataEMGtraces(expData,{'TA'},{'TM base'},'R',1,40);
+    %This will give us the average of the last 40 strides of for the TA muscle
+    %during treadmill baseline 
+    
 
+%%
 alignmentLengths=[16,32,16,32];
 events={'RHS','LTO','LHS','RTO'};
 
