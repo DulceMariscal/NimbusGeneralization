@@ -14,7 +14,7 @@
 % expData2=expData;
 % load('NimbG_Boyan.mat')
 
-%% Set period to plot
+%% Set muscle to plot
 
 muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU','HIP'};
 

@@ -11,10 +11,10 @@ function fh=plotEMGtraces(expData,conds,muscle,late,strides,normalize,normCond)
 %strides - number of strides that you want to plot
 %normalize - 1 to normalize the data 
 %normCond - Condtions by which to normalize the data
-
+%
 %OUTPUT:
 % fh - figure handle
-
+%
 %EXAMPLE:
 %fh=plotEMGtraces(expData,{'TM base'},{'TA'},1,40);
 %This will plot the average of the last 40 strides of for the TA muscle
@@ -25,10 +25,6 @@ function fh=plotEMGtraces(expData,conds,muscle,late,strides,normalize,normCond)
 row=5;
 colum=6;
 
-%% Set period to plot
-% late=0;
-% baselate=1;
-% missing = [];
 %% 
 if nargin<6 || isempty(normalize)
     normalize=0;
@@ -52,6 +48,9 @@ fh=figure('Units','Normalized');
 poster_colors;
 colorOrder=[p_red; p_orange; p_fade_green; p_fade_blue; p_plum; p_green; p_blue; p_fade_red; p_lime; p_yellow; [0 0 0]];
 condColors=colorOrder;
+if length(conds)>length(colorOrder)
+    condColors=[colorOrder; rand(1)*colorOrder];
+end 
 
 ph1=[];
 prc=[16,84];
