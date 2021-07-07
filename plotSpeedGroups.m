@@ -1,18 +1,38 @@
 clear all 
 close all
 
+%% To get the speed for session 2 of the nimbus sujects 
+% You need to estimated the ratio between the last 40 strides of the participants that you
+%want to test against CTR_01 (example: NTR_03/CTR_01)
+% this give you the ratio for the slow and fast (last section of the code)
+% input that into the SpeedProfileGenerator.m on the  "This is for the
+% nimbus subjects" section 
+%
+
+
+%% To get the speed for the controls 
+%You need to get the ratio between the last 40 strides of the previous
+%control participant and the average of the nimbus group that you want to
+%test (example:SingleStanceSpeedFast(NimbusTraining)/SingleStanceSpeedFast(CTR_02)=   1.0284)
+% this give you the ratio for the slow and fast (last section of the code)
+% input that into the SpeedProfileGenerator.m on 
+%the  "This is for the control subejcts" section 
+
+
+
+%%
 % cd '/Volumes/Users/Dulce/R01_Nimbus2021/SpeedAnalysis'
 % group{1}= adaptationData.createGroupAdaptData({'NTS_01params','NTS_02params','NTS_03params','NTS_04params'});
-% group{1}= adaptationData.createGroupAdaptData({'NTR_01params','NTR_02params','NTR_03params','NTR_04params'});
-group{1}= adaptationData.createGroupAdaptData({'NTR_04params'});
+group{1}= adaptationData.createGroupAdaptData({'NTR_01params','NTR_02params','NTR_03params','NTR_04params'});
+% group{1}= adaptationData.createGroupAdaptData({'NTR_04params'});
 % group{3}= adaptationData.createGroupAdaptData({'Dulce_Leftparams'});
-group{2}= adaptationData.createGroupAdaptData({'CTR_01params'});
+group{2}= adaptationData.createGroupAdaptData({'CTR_03params'});
 % group{4}= adaptationData.createGroupAdaptData({'CTR_00params'});
 % group{2}= adaptationData.createGroupAdaptData({'CTR_00_2params','ShuqiSpeedTestparams','DulceSpeedTestparams','MackSpeedTestparams'});
 % group{2}= adaptationData.createGroupAdaptData({'CTR_02_kin_28-Jun-2021params'});
 
 conditions={'TR base','Adapt'}; %'Pos Short','Neg Short',
-params={'singleStanceSpeedSlow','singleStanceSpeedFast'}; %you can plot which ever parameter you are interested on check into the adaptData.data for labels
+params={'singleStanceSpeedSlow','singleStanceSpeedFast','singleStanceSpeedDiff'}; %you can plot which ever parameter you are interested on check into the adaptData.data for labels
 % params={'singleStanceSpeedSlowAbsANK','singleStanceSpeedFastAbsANK','singleStanceSpeedDiffAbsAnk'};
 
 
@@ -35,6 +55,7 @@ alignIni=0; %  # strides align at the beginning of the trial (PLAY with it as se
 adaptData=cellfun(@(x) x.adaptData,group,'UniformOutput',false); %Notice that adaptDataGroups(1) decide that I only want to plot the CG group 
 [figh,avg,indv]=adaptationData.plotAvgTimeCourse(adaptData,params,conditions,binwidth,trialMarkerFlag,...
     indivFlag,indivSubs,colorOrder,biofeedback,removeBiasFlag,labels,filterFlag,plotHandles,alignEnd,alignIni);
+
 % figure(1)
 % % set(gcf,'position',[500 200 1000 600])
 % findobj(gcf,'type','axes');
@@ -66,12 +87,6 @@ adaptData=cellfun(@(x) x.adaptData,group,'UniformOutput',false); %Notice that ad
 % Fast=nanmean(avg(1).singleStanceSpeedFast.TRbase.trial1(561-40:561))/nanmean(avg(2).singleStanceSpeedFast.Adapt.trial1(end-40:end))
 % Slow=nanmean(avg(1).singleStanceSpeedSlow.TRbase.trial1(561-40:561))/nanmean(avg(2).singleStanceSpeedSlow.Adapt.trial1(end-40:end))
 
-Fast=nanmean(avg(1).singleStanceSpeedFast.Adapt.trial1(561-40:561))/nanmean(avg(2).singleStanceSpeedFast.Adapt.trial1(end-40:end))
-Slow=nanmean(avg(1).singleStanceSpeedSlow.Adapt.trial1(561-40:561))/nanmean(avg(2).singleStanceSpeedSlow.Adapt.trial1(end-40:end))
+Fast=nanmean(avg(1).singleStanceSpeedFast.Adapt.trial1(end-40:end))/nanmean(avg(2).singleStanceSpeedFast.Adapt.trial1(end-40:end))
+Slow=nanmean(avg(1).singleStanceSpeedSlow.Adapt.trial1(end-40:end))/nanmean(avg(2).singleStanceSpeedSlow.Adapt.trial1(end-40:end))
 
-% W_NTR_G=nanmean(avg(2).singleStanceSpeedFast.Adapt.trial1(end-40:end))/nanmean(avg(4).singleStanceSpeedFast.Adapt.trial1(end-40:end))
-% W_NTR1=nanmean(indv(2).singleStanceSpeedFast.Adapt.trial1(1,end-40:end))/nanmean(avg(4).singleStanceSpeedFast.Adapt.trial1(end-40:end))
-
-% AvgAll=nanmean([W_NTS,W_NTR_G,W_NTR1])
-
-% {'OG base','TM slow','TM tied 1','Pos short','TM tied 2','Neg short','TM tied 3','TR base','TM fast','Adaptation','Post 1','Post 2'}
