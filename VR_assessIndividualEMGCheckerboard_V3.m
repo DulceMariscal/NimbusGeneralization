@@ -32,9 +32,10 @@ for i = 1:n_subjects
 end
 subID
 
-if (strcmp(groupID, 'CTS') || strcmp(groupID, 'VROG'))
+regModelVersion = 'default'
+if (contains(groupID, 'CTS') || contains(groupID, 'VROG'))
     regModelVersion = 'TS'
-elseif (strcmp(groupID, 'CTR'))
+elseif (contains(groupID, 'CTR'))
     regModelVersion = 'TR'
 end
 
@@ -78,7 +79,7 @@ newLabelPrefix = regexprep(newLabelPrefix,'_s','s');
 
 %%
 % Remove fRF from CTS
-if strcmp(groupID,'CTS')
+if contains(groupID,'CTS')
     badMuscleNames = {'fRFs'};
     badMuscleIdx=[];
     for bm = badMuscleNames
