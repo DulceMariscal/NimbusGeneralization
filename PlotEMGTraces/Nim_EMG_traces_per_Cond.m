@@ -17,12 +17,14 @@
 %% Set muscle to plot
 
 muscle={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU','HIP'};
+normalize = 1;  % 1 to normalize data
+normCond = {'TR base'};
 
 %% Baseline condtions 
 conds={'OG base','TM tied 1','TR Base'};
 late=1;
 strides=40;
-fh=plotEMGtraces(expData,conds,muscle,late,strides);
+fh=plotEMGtraces(expData,conds,muscle,late,strides,normalize,normCond);
 
 %% Late condition 
 late=1;
@@ -30,7 +32,7 @@ strides=40;
 conds={'OG base','TM tied 1',...
     'TR Base','Adaptation',...
     'Post 1','Post 2'};
-fh=plotEMGtraces(expData,conds,muscle,late,strides);
+fh=plotEMGtraces(expData,conds,muscle,late,strides,normalize,normCond);
 
 
 %% Early conditions 
@@ -39,7 +41,7 @@ strides=30;
 conds={'TR Base','Pos short',...
     'Neg Short','Adaptation',...
     'Post 1','Post 2'};
-fh=plotEMGtraces(expData,conds,muscle,late,strides);
+fh=plotEMGtraces(expData,conds,muscle,late,strides,normalize,normCond);
 
 %% Saving the data 
 % if late
