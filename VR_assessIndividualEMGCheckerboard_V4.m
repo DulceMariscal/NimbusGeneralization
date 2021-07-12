@@ -21,8 +21,8 @@ clear; close all; clc;
 % changeCondName('CTR_02_2','OG 1','OG base')
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'CTR_02';
-saveResAndFigure = false;
+groupID = 'CTR_03';
+saveResAndFigure = true;
 plotAllEpoch = false;
 plotIndSubjects = true;
 plotGroup = false;
@@ -38,7 +38,7 @@ for i = 1:n_subjects
 end
 subID
 
-regModelVersion = 'default'
+regModelVersion =  'TR' %'default'
 % if (contains(groupID, 'CTS') || contains(groupID, 'VROG'))
 %     regModelVersion = 'TS'
 % elseif (contains(groupID, 'CTR'))
@@ -97,6 +97,13 @@ elseif contains(groupID,'CTR_02')
         badMuscleIdx = [badMuscleIdx, find(ismember(newLabelPrefix,bm))];
     end
     newLabelPrefix = newLabelPrefix(setdiff(1:end, badMuscleIdx))
+% elseif contains(groupID,'CTR')
+%         badMuscleNames = {'fTFLs'};
+%         badMuscleIdx=[];
+%         for bm = badMuscleNames
+%             badMuscleIdx = [badMuscleIdx, find(ismember(newLabelPrefix,bm))];
+%         end
+%     newLabelPrefix = newLabelPrefix(setdiff(1:end, badMuscleIdx))
 end
 %%
 % adaptDataSubject = normalizedTMFullAbrupt.adaptData{1, 1}; 
@@ -144,7 +151,7 @@ if plotAllEpoch
         set(gcf,'color','w');
 
         if (saveResAndFigure)
-            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V12/'];
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
             if not(isfolder(resDir))
                 mkdir(resDir)
             end
@@ -163,13 +170,24 @@ end
 
 usefft = 0; normalizeData = 0;
 
-for splitCount = 1:2
+for splitCount = [3 5] 
+    splitCount 
     if splitCount == 1 %first short split, fast baseline - split
         ep=defineEpochVR_OG_UpdateV3('nanmean');
         refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
-    else %2nd short split, slow baseline - split
+    elseif splitCount == 2%2nd short split, slow baseline - split
         ep=defineEpochVR_OG_UpdateV4('nanmean');
         refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})2', ep);
+    elseif splitCount == 3 %EMG_pos (Pos Short - fast base );  EMG_neg (Neg Short 2 - Slow base )
+        ep=defineEpochVR_OG_UpdateV5('nanmean');
+        refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
+    elseif splitCount == 4 %2nd short split positive, slow baseline
+        ep=defineEpochVR_OG_UpdateV6('nanmean');
+        refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
+    elseif splitCount == 5
+        ep=defineEpochVR_OG_UpdateV7('nanmean');
+        refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
+        
     end
     refEpAdaptLate = defineReferenceEpoch('Task_{Switch}',ep);
     refEpPost1Late= defineReferenceEpoch('Post1_{Late}',ep);
@@ -208,7 +226,7 @@ for splitCount = 1:2
             set(ph(1,end),'Position',pos);
             set(gcf,'color','w');
 
-            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V12/'];
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
             if (saveResAndFigure)
                 if not(isfolder(resDir))
                     mkdir(resDir)
@@ -229,6 +247,29 @@ for splitCount = 1:2
     end
     %% plot checkerboards and run regression per group
     if length(subID) > 1 || plotGroup
+        
+        if splitCount == 1 %first short split, fast baseline - split
+            ep=defineEpochVR_OG_UpdateV3('nanmean');
+            refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
+        elseif splitCount == 2%2nd short split, slow baseline - split
+            ep=defineEpochVR_OG_UpdateV4('nanmean');
+            refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})2', ep);
+        elseif splitCount == 3 %EMG_pos (Pos Short - fast base );  EMG_neg (Neg Short 2 - Slow base )
+            ep=defineEpochVR_OG_UpdateV5('nanmean');
+            refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
+        elseif splitCount == 4  %EMG_pos (Pos Short - fast base );  EMG_neg (Pos Short 2 - Slow base )
+            ep=defineEpochVR_OG_UpdateV6('nanmean');
+            refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
+        elseif splitCount == 5  %EMG_pos (Pos Short - fast base );  EMG_neg (Pos Short  - Slow base )
+            ep=defineEpochVR_OG_UpdateV7('nanmean');
+            refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
+            
+        end
+        
+        refEpAdaptLate = defineReferenceEpoch('Task_{Switch}',ep);
+        refEpPost1Late= defineReferenceEpoch('Post1_{Late}',ep);
+        refEp= defineReferenceEpoch('TMbase',ep); %fast tied 1 if short split 1, slow tied if 2nd split
+        
         fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
         ph=tight_subplot(1,5,[.03 .005],.04,.04);
         flip=true;
@@ -247,7 +288,7 @@ for splitCount = 1:2
             [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),refEp,flip); % OG base - TR base, env switching
         end
         [~,~,~,Data{4},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS}, transition 1
-        [~,~,~,Data{5},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %TM post VR early - OG post late, transition 2
+        [~,~,~,Data{5},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpPost1Late,flip); %TM post VR early - OG post late, transition 2
         %     [~,~,labels,dataE{1},dataRef{1}]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
 
         set(ph(:,1),'CLim',[-1 1]);
@@ -260,7 +301,7 @@ for splitCount = 1:2
         set(ph(1,end),'Position',pos);
         set(gcf,'color','w');
 
-        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V12/GroupResults/'];
+        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/GroupResults/'];
         if (saveResAndFigure)    
             if not(isfolder(resDir))
                 mkdir(resDir)
@@ -309,7 +350,7 @@ for i = 1:n_subjects
     set(ph(1,end),'Position',pos);
     set(gcf,'color','w');
 
-    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V12/'];
+    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
     if saveResAndFigure
         if not(isfolder(resDir))
             mkdir(resDir)
