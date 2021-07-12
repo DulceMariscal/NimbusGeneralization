@@ -28,11 +28,11 @@ clear; close all; clc;
 % sub={'YL02params'};
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'NTR_04'; % groupID to grab all subjects from the same group. If only want to grab 1 subject, specify subject ID.
+groupID = 'NTR'; % groupID to grab all subjects from the same group. If only want to grab 1 subject, specify subject ID.
 saveResAndFigure = true;
 plotAllEpoch = false;
 plotIndSubjects = false;
-plotGroup = false; %will always plot group if more than 1 subjects provided
+plotGroup = true; %will always plot group if more than 1 subjects provided
 
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 files = dir ([scriptDir '/data/' groupID '*params.mat']);
@@ -55,7 +55,7 @@ n_subjects = size(files,1) - session2_n_subjects;
 subID
 session2subID
 
-regModelVersion = 'default'
+regModelVersion = 'TR' %'default'
 % if (contains(groupID, 'NTS'))
 %     regModelVersion = 'TS'
 % elseif (contains(groupID, 'NTR'))
@@ -103,6 +103,8 @@ if strcmp(groupID, 'NTR_03')
     badMuscleNames = {'fTFLs'};
 elseif strcmp(groupID, 'NTR_04')
     badMuscleNames = {'sLGs'};
+elseif strcmp(groupID, 'NTR')   
+     badMuscleNames = {'sLGs','fTFLs'};
 end
 
 if exist('badMuscleNames','var') %check if badMuscleNames is defined, if so update the labels list.
@@ -152,7 +154,7 @@ if plotAllEpoch
             set(gcf,'color','w');
 
             if (saveResAndFigure)
-                resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V12/'];
+                resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
                 if not(isfolder(resDir))
                     mkdir(resDir)
                 end
@@ -169,7 +171,7 @@ end
 
 usefft = 0; normalizeData = 0;
 
-for splitCount = 1:2
+for splitCount = 1:3
     splitCount
     
     ep=defineEpochNIM_OG_UpdateV3('nanmean');
@@ -203,11 +205,19 @@ for splitCount = 1:2
                 end
                 %all labels should be the same, no need to save again.
                 [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(14,:),fh,ph(1,2),ep(4,:),flip); % Noadapt (env-driven), TM base - EMG_on(+)
-            else
+            elseif splitCount == 2
                 if usefft
                     [~,~,labels,Data{1},dataRef2]=adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(3,:),fh,ph(1,1),epSession2(1,:),flip); %  EMG_split(+) - TM base fast, adaptation, later will be leg swapped
                 else
                     [~,~,labels,Data{1},dataRef2]=adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(2,:),fh,ph(1,1),epSession2(1,:),flip); %  EMG_split(-) - TM base fast, adaptation
+                end
+                [~,~,~,Data{2},~] = adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(1,:),fh,ph(1,2),epSession2(3,:),flip); % Noadapt (env-driven/within-env), - EMGon(+) = TM base - EMG_on(+)
+                
+            elseif splitCount == 3
+                if usefft
+                    [~,~,labels,Data{1},dataRef2]=adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(3,:),fh,ph(1,1),epSession2(14,:),flip); %  EMG_split(+) - TM base slow, adaptation, later will be leg swapped
+                else
+                    [~,~,labels,Data{1},dataRef2]=adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(2,:),fh,ph(1,1),epSession2(14,:),flip); %  EMG_split(-) - TM base slow, adaptation
                 end
                 [~,~,~,Data{2},~] = adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(1,:),fh,ph(1,2),epSession2(3,:),flip); % Noadapt (env-driven/within-env), - EMGon(+) = TM base - EMG_on(+)
             end
@@ -225,7 +235,7 @@ for splitCount = 1:2
             set(ph(1,end),'Position',pos);
             set(gcf,'color','w');
 
-            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V12/'];
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
             if saveResAndFigure
                 if not(isfolder(resDir))
                     mkdir(resDir)
@@ -256,13 +266,21 @@ for splitCount = 1:2
             end
             %all labels should be the same, no need to save again.
             [~,~,~,Data{2},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(14,:),fh,ph(1,2),ep(4,:),flip); % Noadapt (env-driven), TM base - EMG_on(+)
-        else
+        elseif splitCount == 2
             if usefft
                 [~,~,labels,Data{1},dataRef2]=session2Data.plotCheckerboards(newLabelPrefix,epSession2(3,:),fh,ph(1,1),epSession2(1,:),flip); %  EMG_split(+) - TM base fast, adaptation, later will be leg swapped
             else
                 [~,~,labels,Data{1},dataRef2]=session2Data.plotCheckerboards(newLabelPrefix,epSession2(2,:),fh,ph(1,1),epSession2(1,:),flip); %  EMG_split(-) - TM base fast, adaptation
             end
             [~,~,~,Data{2},~] = session2Data.plotCheckerboards(newLabelPrefix,epSession2(1,:),fh,ph(1,2),epSession2(3,:),flip); % Noadapt (env-driven/within-env), - EMGon(+) = TM base - EMG_on(+)
+        elseif splitCount == 3
+            if usefft
+                [~,~,labels,Data{1},dataRef2]=session2Data.plotCheckerboards(newLabelPrefix,epSession2(3,:),fh,ph(1,1),epSession2(14,:),flip); %  EMG_split(+) - TM base slow, adaptation, later will be leg swapped
+            else
+                [~,~,labels,Data{1},dataRef2]=session2Data.plotCheckerboards(newLabelPrefix,epSession2(2,:),fh,ph(1,1),epSession2(14,:),flip); %  EMG_split(-) - TM base slow, adaptation
+            end
+            [~,~,~,Data{2},~] = session2Data.plotCheckerboards(newLabelPrefix,epSession2(1,:),fh,ph(1,2),epSession2(3,:),flip); % Noadapt (env-driven/within-env), - EMGon(+) = TM base - EMG_on(+)
+            
         end
         [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),ep(6,:),flip); %  OG base - TR base = -(TR base - OG base), env switching
         [~,~,~,Data{4},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS}, transition 1
@@ -280,7 +298,7 @@ for splitCount = 1:2
 
         set(gcf,'color','w');
 
-        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V12/GroupResults/'];
+        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/GroupResults/'];
         if saveResAndFigure    
             if not(isfolder(resDir))
                 mkdir(resDir)
@@ -355,7 +373,7 @@ if plotIndSubjects || length(subID) == 1
         set(ph(1,end),'Position',pos);
         set(gcf,'color','w');
 
-        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V12/'];
+        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
         if saveResAndFigure
             if not(isfolder(resDir))
                 mkdir(resDir)
@@ -424,7 +442,7 @@ for i = 1:n_subjects
     set(ph(1,end),'Position',pos);
     set(gcf,'color','w');
 
-    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V12/'];
+    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
     if saveResAndFigure
         if not(isfolder(resDir))
             mkdir(resDir)
