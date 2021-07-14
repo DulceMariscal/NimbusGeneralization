@@ -1,15 +1,15 @@
 %%load 
 
- load('/Volumes/Users/Dulce/R01_Nimbus2021/NTS_01/Reprocessed 06-07-2021/NTS_01params.mat') %We use NTS_01 as our base
-
+%  load('/Volumes/Users/Dulce/R01_Nimbus2021/NTS_01/Reprocessed 06-07-2021/NTS_01params.mat') %We use NTS_01 as our base
+load('Y:\Dulce\R01_Nimbus2021\NTS_01\Reprocessed 06-07-2021\NTS_01params.mat')
 Data = adaptData.getParamInCond('singleStanceSpeedSlow','adaptation'); Data(isnan(Data(:,:)),:) = [];
 speedFactor_slow_Ref = 1.17;
-speedFactor_slow=speedFactor_slow_Ref;
+speedFactor_slow=speedFactor_slow_Ref* 1.0596;
 Slow_OGspeed_late = speedFactor_slow*nanmean(Data(end-46:end-5))/1000
 
 Data = adaptData.getParamInCond('singleStanceSpeedFast','adaptation'); Data(isnan(Data(:,:)),:) = [];
 speedFactor_fast_Ref =  1.38;
-speedFactor_fast=speedFactor_fast_Ref*1.03;
+speedFactor_fast=speedFactor_fast_Ref*1.03*0.91;
 Fast_OGspeed_late = speedFactor_fast*nanmean(Data(end-46:end-5))/1000
 
 speedFactor = 1;
@@ -20,9 +20,13 @@ midspeed = (speedFactor*(Fast_OGspeed_late+Slow_OGspeed_late))/2;
 % cd('/Volumes/Users/Dulce/R01_Nimbus2021/CTR_03/Speed_Profiles')
 
 %% This is for the nimbus subjects 
+NTS_01fast=0.785; %Do not change this
+NTS_01slow= 0.462; %Do not change this
 
-Fast_OGspeed_late = 1.35 * 0.785
-Slow_OGspeed_late = 1.30 * 0.462
+NimbusFast=1.35 ; %Update this from the "plotSpeedGroups.m" ratio
+NimbusSlow=1.30 ; %Update this from the "plotSpeedGroups.m" ratio
+Fast_OGspeed_late = NTS_01fast*NimbusFast
+Slow_OGspeed_late = NTS_01slow*NimbusSlow
 speedFactor = 1;
 deltaspeed =speedFactor*(Fast_OGspeed_late-Slow_OGspeed_late);
 midspeed = (speedFactor*(Fast_OGspeed_late+Slow_OGspeed_late))/2;

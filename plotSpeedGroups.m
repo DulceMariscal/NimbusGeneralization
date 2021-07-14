@@ -23,10 +23,11 @@ close all
 %%
 % cd '/Volumes/Users/Dulce/R01_Nimbus2021/SpeedAnalysis'
 % group{1}= adaptationData.createGroupAdaptData({'NTS_01params','NTS_02params','NTS_03params','NTS_04params'});
-group{1}= adaptationData.createGroupAdaptData({'NTR_01params','NTR_02params','NTR_03params','NTR_04params'});
+% group{1}= adaptationData.createGroupAdaptData({'NTR_01params','NTR_02params','NTR_03params','NTR_04params'});
+group{1}= adaptationData.createGroupAdaptData({'NTR_03params'});
 % group{1}= adaptationData.createGroupAdaptData({'NTR_04params'});
 % group{3}= adaptationData.createGroupAdaptData({'Dulce_Leftparams'});
-group{2}= adaptationData.createGroupAdaptData({'CTR_03params'});
+group{2}= adaptationData.createGroupAdaptData({'CTR_01params'});
 % group{4}= adaptationData.createGroupAdaptData({'CTR_00params'});
 % group{2}= adaptationData.createGroupAdaptData({'CTR_00_2params','ShuqiSpeedTestparams','DulceSpeedTestparams','MackSpeedTestparams'});
 % group{2}= adaptationData.createGroupAdaptData({'CTR_02_kin_28-Jun-2021params'});
@@ -87,6 +88,16 @@ adaptData=cellfun(@(x) x.adaptData,group,'UniformOutput',false); %Notice that ad
 % Fast=nanmean(avg(1).singleStanceSpeedFast.TRbase.trial1(561-40:561))/nanmean(avg(2).singleStanceSpeedFast.Adapt.trial1(end-40:end))
 % Slow=nanmean(avg(1).singleStanceSpeedSlow.TRbase.trial1(561-40:561))/nanmean(avg(2).singleStanceSpeedSlow.Adapt.trial1(end-40:end))
 
-Fast=nanmean(avg(1).singleStanceSpeedFast.Adapt.trial1(end-40:end))/nanmean(avg(2).singleStanceSpeedFast.Adapt.trial1(end-40:end))
-Slow=nanmean(avg(1).singleStanceSpeedSlow.Adapt.trial1(end-40:end))/nanmean(avg(2).singleStanceSpeedSlow.Adapt.trial1(end-40:end))
+reference_fast=avg(1).singleStanceSpeedFast.Adapt.trial1(~isnan( avg(1).singleStanceSpeedFast.Adapt.trial1));
+reference_slow=avg(1).singleStanceSpeedSlow.Adapt.trial1(~isnan( avg(1).singleStanceSpeedSlow.Adapt.trial1));
+
+denominator_fast=avg(2).singleStanceSpeedFast.Adapt.trial1(~isnan( avg(2).singleStanceSpeedFast.Adapt.trial1));
+denominator_slow=avg(2).singleStanceSpeedSlow.Adapt.trial1(~isnan( avg(2).singleStanceSpeedSlow.Adapt.trial1));
+
+Fast=nanmean(reference_fast(end-40:end))/nanmean(denominator_fast(end-40:end))
+Slow=nanmean(reference_slow(end-40:end))/nanmean(denominator_slow(end-40:end))
+
+
+% Fast=nanmean(avg(1).singleStanceSpeedFast.Adapt.trial1(546-40:546))/nanmean(avg(2).singleStanceSpeedFast.Adapt.trial1(end-40:end))
+% Slow=nanmean(avg(1).singleStanceSpeedSlow.Adapt.trial1(546-40:546))/nanmean(avg(2).singleStanceSpeedSlow.Adapt.trial1(end-40:end))
 
