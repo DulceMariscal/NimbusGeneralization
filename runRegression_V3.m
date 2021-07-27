@@ -1,4 +1,4 @@
-function runRegression_V3(Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, version, usefft) 
+function runRegression_V3(Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, version, usefft, regressorNames) 
 % perform regression anlysis V2 (see grant one note: Regression discussion (two transitions)
 % printout the regression results and save the results to destination
 % folders (if saveResAndFigure flag is on)
@@ -22,6 +22,8 @@ function runRegression_V3(Data, normalizeData, isGroupData, dataId, resDir, save
 % testing group (see Separate regression models to characterize switching within and across environments from Grant Notebook)
 % - usefft: OPTIONAL, boolean flag indicating if should use fft of the data to
 % approximate deltaOn-, default false.
+% - regressorNames: OPTIONAL, a cell array of the regressor names, size of
+% 1 x 5, default name: {'Adapt','WithinContextSwitch','MultiContextSwitch','Trans1','Trans2'}
 % 
 % ----- Returns ------
 %  none
@@ -31,6 +33,9 @@ function runRegression_V3(Data, normalizeData, isGroupData, dataId, resDir, save
     end
     if nargin < 8 || isempty(usefft)
         usefft = false; %default false
+    end
+    if nargin < 9
+        regressorNames = {'Adapt','WithinContextSwitch','MultiContextSwitch','Trans1','Trans2'}; %default names
     end
     
     if ~isGroupData
@@ -60,19 +65,18 @@ function runRegression_V3(Data, normalizeData, isGroupData, dataId, resDir, save
     %define model based on the version, version has to fall in 1 of the 3
     %categories, otherwise there is a bug in the code.
     if strcmpi(version,'default') %default, 3 regressors version
-        trans1Model = 'Trans1 ~ WithinContextSwitch+MultiContextSwitch+Adapt-1';
-        trans2Model = 'Trans2 ~ WithinContextSwitch+MultiContextSwitch+Adapt-1';
+        trans1Model = [regressorNames{4} '~' regressorNames{1} '+' regressorNames{2} '+' regressorNames{3} '-1'];
+        trans2Model = [regressorNames{5} '~' regressorNames{1} '+' regressorNames{2} '+' regressorNames{3} '-1'];
     elseif strcmpi(version,'tr') %training group
-        trans1Model = 'Trans1 ~ WithinContextSwitch+Adapt-1';
-        trans2Model = 'Trans2 ~ MultiContextSwitch+Adapt-1';
+        trans1Model = [regressorNames{4} '~' regressorNames{1} '+' regressorNames{2} '-1'];
+        trans2Model = [regressorNames{5} '~' regressorNames{1} '+' regressorNames{3} '-1'];
     elseif strcmpi(version,'ts') %testing group
-        trans1Model = 'Trans1 ~ MultiContextSwitch+Adapt-1';
-        trans2Model = 'Trans2 ~ MultiContextSwitch+Adapt-1';
+        trans1Model = [regressorNames{4} '~' regressorNames{1} '+' regressorNames{3} '-1'];
+        trans2Model = [regressorNames{5} '~' regressorNames{1} '+' regressorNames{3} '-1'];
     end
     
-    
     %%% Run regression analysis V2
-    tableData=table(Data{1},Data{2},Data{3},Data{4},Data{5},'VariableNames',{'Adapt', 'WithinContextSwitch', 'MultiContextSwitch', 'Trans1', 'Trans2'});
+    tableData=table(Data{1},Data{2},Data{3},Data{4},Data{5},'VariableNames',regressorNames);
     fitTrans1NoConst=fitlm(tableData,trans1Model)%exclude constant
     Rsquared = fitTrans1NoConst.Rsquared
     %compute adaptation and switch index
