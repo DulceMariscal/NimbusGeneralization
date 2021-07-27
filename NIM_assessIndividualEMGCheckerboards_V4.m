@@ -15,7 +15,7 @@
 % the version number to avoid overwrite.
 
 %% Update params file condition names to match
-% changeCondName('NTS_05',{'OG adaptation'},{'Adaptation'})
+% changeCondName('VROG_03',{'TM base', 'OG post','TM post'},{'TR base','Post 1','Post 2'})
 % clc;
 % load('/Users/mac/Desktop/Lab/SMLLab/Code/R01_MyFork/data/VROG_03params.mat')
 % adaptData.metaData.conditionName
@@ -28,12 +28,11 @@ clear; close all; clc;
 % sub={'YL02params'};
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'NTS_05'; % groupID to grab all subjects from the same group. If only want to grab 1 subject, specify subject ID.
-longProtocolSubject = true;
+groupID = 'NTR'; % groupID to grab all subjects from the same group. If only want to grab 1 subject, specify subject ID.
 saveResAndFigure = true;
-plotAllEpoch = true;
+plotAllEpoch = false;
 plotIndSubjects = false;
-plotGroup = false; %will always plot group if more than 1 subjects provided
+plotGroup = true; %will always plot group if more than 1 subjects provided
 
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 files = dir ([scriptDir '/data/' groupID '*params.mat']);
@@ -56,46 +55,36 @@ n_subjects = size(files,1) - session2_n_subjects;
 subID
 session2subID
 
-regModelVersion = 'default'
-if (contains(groupID, 'NTS'))
-    regModelVersion = 'TS'
-elseif (contains(groupID, 'NTR'))
-    regModelVersion = 'TR'
-end
+regModelVersion = 'TR' %'default'
+% if (contains(groupID, 'NTS'))
+%     regModelVersion = 'TS'
+% elseif (contains(groupID, 'NTR'))
+%     regModelVersion = 'TR'
+% end
 
 %% load and prepare data. 
 muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'HIP'};
 n_muscles = length(muscleOrder);
 newLabelPrefix = defineMuscleList(muscleOrder);
-totalSessions = 1; %used later to determine what epochs to use for plotting
 
-if longProtocolSubject
-    normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
-    epLong=defineEpochNimbusShoes_longProtocol('nanmean');
-    refEp = defineReferenceEpoch('OGNimbus',epLong);
-    refEpLate = defineReferenceEpoch('Adaptation',epLong);    
-else
-    normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
-    ep=defineEpochNimbusShoes('nanmean');
-    refEp = defineReferenceEpoch('OGNimbus',ep);
-    refEpLate = defineReferenceEpoch('Adaptation',ep);
-    epSession1 = ep;
-    if ~isempty(session2subID)
-        session2Data = adaptationData.createGroupAdaptData(session2sub);
-        epSession2 = defineEpochNimbusShoes_Session2('nanmean',groupID);
-        refEpSession2 = defineReferenceEpoch('TMBaseFast',epSession2);
-        session2Data = session2Data.normalizeToBaselineEpoch(newLabelPrefix,refEpSession2);
-        ll=session2Data.adaptData{1}.data.getLabelsThatMatch('^Norm');
-        l2=regexprep(regexprep(ll,'^Norm',''),'_s','s');
-        session2Data=session2Data.renameParams(ll,l2);
-        totalSessions = 1;
-    end
-end
+normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
+session2Data = adaptationData.createGroupAdaptData(session2sub);
 
+ep=defineEpochNimbusShoes('nanmean');
+refEp = defineReferenceEpoch('OGNimbus',ep);
+refEpLate = defineReferenceEpoch('Adaptation',ep);
+epSession1 = ep;
 normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,refEp);
 ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
 l2=regexprep(regexprep(ll,'^Norm',''),'_s','s');
 normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
+
+epSession2 = defineEpochNimbusShoes_Session2('nanmean',groupID);
+refEpSession2 = defineReferenceEpoch('TMBaseFast',epSession2);
+session2Data = session2Data.normalizeToBaselineEpoch(newLabelPrefix,refEpSession2);
+ll=session2Data.adaptData{1}.data.getLabelsThatMatch('^Norm');
+l2=regexprep(regexprep(ll,'^Norm',''),'_s','s');
+session2Data=session2Data.renameParams(ll,l2);
 
 newLabelPrefix = regexprep(newLabelPrefix,'_s','s');
 
@@ -127,39 +116,26 @@ if exist('badMuscleNames','var') %check if badMuscleNames is defined, if so upda
 end
 %% plot all epochs for all relevant conditions
 if plotAllEpoch
-    for session = 1:totalSessions
-        if longProtocolSubject
+    for session = 1:2
+        if session == 1
             subjectNum = n_subjects;
             currData = normalizedTMFullAbrupt;
+            ep = epSession1;
             currRefEp = refEp;
-%             ep = epLong([1,8,11,13],:); %plot after effects only
-            ep = epLong;
         else
-            if session == 1
-                subjectNum = n_subjects;
-                currData = normalizedTMFullAbrupt;
-                ep = epSession1;
-                currRefEp = refEp;
-            else
-                subjectNum = session2_n_subjects;
-                currData = session2Data;
-                ep = epSession2;
-                currRefEp = refEpSession2;
-            end
+            subjectNum = session2_n_subjects;
+            currData = session2Data;
+            ep = epSession2;
+            currRefEp = refEpSession2;
         end
         for i = 1:subjectNum
             adaptDataSubject = currData.adaptData{1, i}; 
 
             fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
-%             ph=tight_subplot(1,length(ep)+1,[.03 .005],.04,.04);
-            ph=tight_subplot(1,4,[.03 .005],.04,.04);
+            ph=tight_subplot(1,length(ep)+1,[.03 .005],.04,.04);
             flip=true;
 
-            % plot after effects only
-%             adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,1),[],flip); %First, plot reference epoch:   
-%             adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,2),[],flip); %First, plot reference epoch:   
-%             adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,3),ep(1,:),flip); %First, plot reference epoch:   
-%             adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(13,:),fh,ph(1,4),ep(8,:),flip); %First, plot reference epoch:   
+            adaptDataSubject.plotCheckerboards(newLabelPrefix,currRefEp,fh,ph(1,1),[],flip); %First, plot reference epoch:   
             [~,~,~,~,~]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),currRefEp,flip);%Second, the rest:
             
             if session == 1
@@ -178,12 +154,12 @@ if plotAllEpoch
             set(gcf,'color','w');
 
             if (saveResAndFigure)
-                resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/'];
+                resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
                 if not(isfolder(resDir))
                     mkdir(resDir)
                 end
-                saveas(fh, [resDir subID{i} '_AllEpochCheckerBoard_AE_NewBase' num2str(session) '.png'])
-%                 saveas(fh, [resDir subID{i} '_AllEpochCheckerBoard_' num2str(session)],'epsc')
+                saveas(fh, [resDir subID{i} '_AllEpochCheckerBoard_' num2str(session) '.png'])
+                saveas(fh, [resDir subID{i} '_AllEpochCheckerBoard_' num2str(session)],'epsc')
             end
         end
     end
@@ -194,33 +170,25 @@ end
 % baseline - EMG_split(-) 
 
 usefft = 0; normalizeData = 0;
-%previous version here is 3
-% for splitCount = 1:3
-for splitCount = 1:10 %here split count used interchangeable as model options
-    splitCount    
-    if longProtocolSubject
-        ep = epLong;
-    else
-        ep=defineEpochNIM_OG_UpdateV3('nanmean');
-    %         multi env and transition 1 and 2 always use this, deltaAdapt and
-    %         nonAdapt could be from this or the session2
-        if ~isempty(session2subID)
-            epSession2 = defineEpochNIM_OG_UpdateV4('nanmean', groupID);
-        end
-        refEpAdaptLate = defineReferenceEpoch('Task_{Switch}',ep);
-        refEpOGpost= defineReferenceEpoch('Post1_{Late}',ep);
-    end
 
+for splitCount = 1:3
+    splitCount
     
-    % Plot checkerboards per subject
+    ep=defineEpochNIM_OG_UpdateV3('nanmean');
+%         multi env and transition 1 and 2 always use this, deltaAdapt and
+%         nonAdapt could be from this or the session2
+    epSession2 = defineEpochNIM_OG_UpdateV4('nanmean', groupID);
+
+    refEpAdaptLate = defineReferenceEpoch('Task_{Switch}',ep);
+    refEpOGpost= defineReferenceEpoch('Post1_{Late}',ep);
+    
+    %% Plot checkerboards per subject
     if plotIndSubjects || length(subID) == 1
 %         close all;
         for i = 1:n_subjects
 
             adaptDataSubject = normalizedTMFullAbrupt.adaptData{1, i}; 
-            if ~isempty(session2subID)
-                adaptDataSubjectSession2 = session2Data.adaptData{1, i}; 
-            end
+            adaptDataSubjectSession2 = session2Data.adaptData{1, i}; 
             
             fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
             ph=tight_subplot(1,5,[.03 .005],.04,.04);
@@ -228,99 +196,36 @@ for splitCount = 1:10 %here split count used interchangeable as model options
 
             Data = {}; %in order: adapt, dataEnvSwitch, dataTaskSwitch, dataTrans1, dataTrans2
             %all labels should be the same, no need to save again.
-            if ~longProtocolSubject
-                if splitCount == 1
-                    if usefft
-                        [~,~,labels,Data{1},dataRef2]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(4,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
-                    else
-                        [~,~,labels,Data{1},dataRef2]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
-                    end
-                    %all labels should be the same, no need to save again.
-                    [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(14,:),fh,ph(1,2),ep(4,:),flip); % Noadapt (env-driven), TM base - EMG_on(+)
-                elseif splitCount == 2
-                    if usefft
-                        [~,~,labels,Data{1},dataRef2]=adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(3,:),fh,ph(1,1),epSession2(1,:),flip); %  EMG_split(+) - TM base fast, adaptation, later will be leg swapped
-                    else
-                        [~,~,labels,Data{1},dataRef2]=adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(2,:),fh,ph(1,1),epSession2(1,:),flip); %  EMG_split(-) - TM base fast, adaptation
-                    end
-                    [~,~,~,Data{2},~] = adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(1,:),fh,ph(1,2),epSession2(3,:),flip); % Noadapt (env-driven/within-env), - EMGon(+) = TM base - EMG_on(+)
-
-                elseif splitCount == 3
-                    if usefft
-                        [~,~,labels,Data{1},dataRef2]=adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(3,:),fh,ph(1,1),epSession2(14,:),flip); %  EMG_split(+) - TM base slow, adaptation, later will be leg swapped
-                    else
-                        [~,~,labels,Data{1},dataRef2]=adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(2,:),fh,ph(1,1),epSession2(14,:),flip); %  EMG_split(-) - TM base slow, adaptation
-                    end
-                    [~,~,~,Data{2},~] = adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(1,:),fh,ph(1,2),epSession2(3,:),flip); % Noadapt (env-driven/within-env), - EMGon(+) = TM base - EMG_on(+)
+            
+            if splitCount == 1
+                if usefft
+                    [~,~,labels,Data{1},dataRef2]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(4,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
+                else
+                    [~,~,labels,Data{1},dataRef2]=adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
                 end
-                [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),ep(6,:),flip); %  -(TR base - OG base) = OG base - TR base, env switching
-                [~,~,~,Data{4},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS} , transition 1
-                [~,~,~,Data{5},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %Nimbus post early - OG post late, transition 2
-            else
-%                 'Adapt', 'WithinContextSwitch', 'MultiContextSwitch',
-                regressorNames = {'MultiContextAdapt','EnvTransition','MultiContextSwitch','Trans1','Trans2'};
-                if (contains(groupID, 'NTS'))
-                    regModelVersion = 'TS'
-                elseif (contains(groupID, 'NTR'))
-                    regModelVersion = 'TR'
+                %all labels should be the same, no need to save again.
+                [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(14,:),fh,ph(1,2),ep(4,:),flip); % Noadapt (env-driven), TM base - EMG_on(+)
+            elseif splitCount == 2
+                if usefft
+                    [~,~,labels,Data{1},dataRef2]=adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(3,:),fh,ph(1,1),epSession2(1,:),flip); %  EMG_split(+) - TM base fast, adaptation, later will be leg swapped
+                else
+                    [~,~,labels,Data{1},dataRef2]=adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(2,:),fh,ph(1,1),epSession2(1,:),flip); %  EMG_split(-) - TM base fast, adaptation
                 end
-                switch splitCount
-                    case {1,6}
-                        [~,~,~,Data{1},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,1),ep(6,:),flip); % adapt
-                        title('Multi-Env-Adapt: NegShort-OG') %on(-) late - OGearly                   
-                        [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,2),ep(1,:),flip); % DN really matter
-                        title('Space-Holder')
-                    case {2,7}
-                        [~,~,~,Data{1},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(23,:),fh,ph(1,1),ep(17,:),flip); % adapt
-                        title('Multi-Env-Adapt: NegFastest-OG') %(-) fastest late - OGearly
-                        [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,2),ep(1,:),flip); % DN really matter
-                        title('Space-Holder')
-                    case {3,8}
-                        [~,~,~,Data{1},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,1),ep(5,:),flip); % adapt
-                        title('Within-Env-Adapt: NegShort-TMSlow') % (-) early - TM slow
-                        regressorNames{1} = 'WithinContextAdapt';
-                        [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,2),ep(25,:),flip); 
-                        title('Env-Switch: OG-TMslow') % OG - TM slow
-                        regModelVersion = 'default'
-                    case {4,9}
-                        [~,~,~,Data{1},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,1),ep(5,:),flip); % adapt
-                        title('Within-Env-Adapt: NegShort-TMSlow') % (-) early - TM slow
-                        regressorNames{1} = 'WithinContextAdapt';
-                        [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,2),ep(2,:),flip); 
-                        title('Env-Switch: OG-TMfast')  % OG - TM fast 
-                        regModelVersion = 'default'
-                    case {5,10} %env switch use OGnoNimbus - OGNimbus
-                        [~,~,~,Data{1},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,1),ep(5,:),flip); % adapt
-                        title('Within-Env-Adapt: NegShort-TMSlow') % (-) early - TM slow
-                        regressorNames{1} = 'WithinContextAdapt';
-                        [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,2),ep(8,:),flip); 
-                        title('Env-Switch: OG-OGNimbus')  % OG - TM fast 
-                        regModelVersion = 'default'
-                    case 11
-                        [~,~,~,Data{1},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(6,:),fh,ph(1,1),ep(5,:),flip); % adapt
-                        title('Within-Env-Adapt: NegShort-TMSlow') % (-) early - TM slow
-                        regressorNames{1} = 'WithinContextAdapt';
-                        [~,~,~,Data{2},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,2),ep(2,:),flip); 
-                        title('Env-Switch: OG-TMfast')  % OG - TM fast
-                        [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(2,:),fh,ph(1,3),ep(3,:),flip); % MultiContextSwitch, OG early - onPlusLate
-                        title('Multi-Env-Switch: TMfast-PosShort')
-                        regModelVersion = 'default'
+                [~,~,~,Data{2},~] = adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(1,:),fh,ph(1,2),epSession2(3,:),flip); % Noadapt (env-driven/within-env), - EMGon(+) = TM base - EMG_on(+)
+                
+            elseif splitCount == 3
+                if usefft
+                    [~,~,labels,Data{1},dataRef2]=adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(3,:),fh,ph(1,1),epSession2(14,:),flip); %  EMG_split(+) - TM base slow, adaptation, later will be leg swapped
+                else
+                    [~,~,labels,Data{1},dataRef2]=adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(2,:),fh,ph(1,1),epSession2(14,:),flip); %  EMG_split(-) - TM base slow, adaptation
                 end
-                if splitCount ~= 11
-                    if splitCount <= 5 %Use TM pos short
-                        [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(4,:),fh,ph(1,3),ep(21,:),flip); % MultiContextSwitch, OG early - onPlusLate
-                        title('Multi-Env-Switch: OG-PosShort')
-                    else %use shoe pos short
-                        [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(24,:),fh,ph(1,3),ep(20,:),flip); % MultiContextSwitch, OG early - onPlusLate
-                        title('Multi-Env-Switch: OG-PosShortShoe')
-                    end
-                end
-                [~,~,~,Data{4},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(10,:),fh,ph(1,4),ep(9,:),flip); %Post1 early - Adaptation_{SS} , transition 1
-                title('Transition 1')
-                [~,~,~,Data{5},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(13,:),fh,ph(1,5),ep(12,:),flip); %Post2 early - Post 1 late, transition 2
-                title('Transition 2')
+                [~,~,~,Data{2},~] = adaptDataSubjectSession2.plotCheckerboards(newLabelPrefix,epSession2(1,:),fh,ph(1,2),epSession2(3,:),flip); % Noadapt (env-driven/within-env), - EMGon(+) = TM base - EMG_on(+)
             end
-                        
+            
+            [~,~,~,Data{3},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),ep(6,:),flip); %  -(TR base - OG base) = OG base - TR base, env switching
+            [~,~,~,Data{4},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS} , transition 1
+            [~,~,~,Data{5},~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpOGpost,flip); %Nimbus post early - OG post late, transition 2
+        
             set(ph(:,1),'CLim',[-1 1]);
             set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*1.5);
             set(ph,'FontSize',8)
@@ -330,24 +235,23 @@ for splitCount = 1:10 %here split count used interchangeable as model options
             set(ph(1,end),'Position',pos);
             set(gcf,'color','w');
 
-            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/'];
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
             if saveResAndFigure
                 if not(isfolder(resDir))
                     mkdir(resDir)
                 end
-                saveas(fh, [resDir subID{i} '_Checkerboard_ver' num2str(usefft) num2str(normalizeData) regModelVersion '_split_' num2str(splitCount) '.png']) 
+%                 saveas(fh, [resDir subID{i} '_Checkerboard_ver' num2str(usefft) num2str(normalizeData) regModelVersion '_split_' num2str(splitCount) '.png']) 
 %                 saveas(fh, [resDir subID{i} '_Checkerboard_ver' num2str(usefft) num2str(normalizeData) regModelVersion '_split_' num2str(splitCount)],'epsc') 
             end
 
             % run regression and save results
             format compact % format loose %(default)
             % not normalized first, then normalized, arugmnets order: (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, version, usefft) 
-            runRegression_V3(Data, false, false, [subID{i} regModelVersion '_split' num2str(splitCount)], resDir, saveResAndFigure, regModelVersion, usefft, regressorNames)
-            runRegression_V3(Data, true, false, [subID{i} regModelVersion '_split' num2str(splitCount)], resDir, saveResAndFigure, regModelVersion, usefft, regressorNames)
+            runRegression_V3(Data, false, false, [subID{i} regModelVersion '_split' num2str(splitCount)], resDir, saveResAndFigure, regModelVersion, usefft)
+            runRegression_V3(Data, true, false, [subID{i} regModelVersion '_split' num2str(splitCount)], resDir, saveResAndFigure, regModelVersion, usefft)
         end
     end
-    
-    % plot checkerboard per group
+    %% plot checkerboard per group
     if length(subID) > 1 || plotGroup
         fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
         ph=tight_subplot(1,5,[.03 .005],.04,.04);
@@ -394,7 +298,7 @@ for splitCount = 1:10 %here split count used interchangeable as model options
 
         set(gcf,'color','w');
 
-        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/GroupResults/'];
+        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/GroupResults/'];
         if saveResAndFigure    
             if not(isfolder(resDir))
                 mkdir(resDir)
@@ -469,7 +373,7 @@ if plotIndSubjects || length(subID) == 1
         set(ph(1,end),'Position',pos);
         set(gcf,'color','w');
 
-        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/'];
+        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
         if saveResAndFigure
             if not(isfolder(resDir))
                 mkdir(resDir)
@@ -538,7 +442,7 @@ for i = 1:n_subjects
     set(ph(1,end),'Position',pos);
     set(gcf,'color','w');
 
-    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/'];
+    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
     if saveResAndFigure
         if not(isfolder(resDir))
             mkdir(resDir)
