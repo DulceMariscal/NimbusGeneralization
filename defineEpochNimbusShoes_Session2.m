@@ -4,15 +4,15 @@ function [eps] = defineEpochNimbusShoes_Session2(nantype, subjID)
 
 names={'Base','TMBaseFast','PostShortFromShoes','OG 1','Pos Short 2','OG 2','Neg Short 2','OG 3','TM fast','TM tied 2','TM tied 3'};
 
-if strcmp(subjID, 'NTR_02')
-    exemptFirstShortSplit = 23;
-elseif strcmp(subjID, 'NTR_03')
-    exemptFirstShortSplit = 24;
-elseif strcmp(subjID, 'NTR_04')
-    exemptFirstShortSplit = 17;  
-else
-    exemptFirstShortSplit = 1;
-end
+% if strcmp(subjID, 'NTR_02')
+%     exemptFirstShortSplit = 23;
+% elseif strcmp(subjID, 'NTR_03')
+%     exemptFirstShortSplit = 24;
+% elseif strcmp(subjID, 'NTR_04')
+%     exemptFirstShortSplit = 17;  
+% else
+exemptFirstShortSplit = 1;
+% end
 exemptFirstShortSplit
 
 eps=defineEpochs(names,...
