@@ -21,11 +21,11 @@ clear; close all; clc;
 % changeCondName('CTR_02_2','OG 1','OG base')
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'CTR_03';
-saveResAndFigure = true;
+groupID = 'CTR';
+saveResAndFigure = false;
 plotAllEpoch = false;
-plotIndSubjects = true;
-plotGroup = false;
+plotIndSubjects = false;
+plotGroup = true;
 
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 files = dir ([scriptDir '/data/' groupID '*params.mat']);
@@ -47,6 +47,8 @@ regModelVersion =  'TR' %'default'
 
 %% load and prep data
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
+
+normalizedTMFullAbrupt=normalizedTMFullAbrupt.removeBadStrides; %remove bad strides 
 
 ss =normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
 
@@ -97,13 +99,13 @@ elseif contains(groupID,'CTR_02')
         badMuscleIdx = [badMuscleIdx, find(ismember(newLabelPrefix,bm))];
     end
     newLabelPrefix = newLabelPrefix(setdiff(1:end, badMuscleIdx))
-% elseif contains(groupID,'CTR')
-%         badMuscleNames = {'fTFLs'};
-%         badMuscleIdx=[];
-%         for bm = badMuscleNames
-%             badMuscleIdx = [badMuscleIdx, find(ismember(newLabelPrefix,bm))];
-%         end
-%     newLabelPrefix = newLabelPrefix(setdiff(1:end, badMuscleIdx))
+elseif contains(groupID,'CTR')
+        badMuscleNames = {'fTFLs'};
+        badMuscleIdx=[];
+        for bm = badMuscleNames
+            badMuscleIdx = [badMuscleIdx, find(ismember(newLabelPrefix,bm))];
+        end
+    newLabelPrefix = newLabelPrefix(setdiff(1:end, badMuscleIdx))
 end
 %%
 % adaptDataSubject = normalizedTMFullAbrupt.adaptData{1, 1}; 
@@ -170,7 +172,7 @@ end
 
 usefft = 0; normalizeData = 0;
 
-for splitCount = [3 5] 
+for splitCount = [5] 
     splitCount 
     if splitCount == 1 %first short split, fast baseline - split
         ep=defineEpochVR_OG_UpdateV3('nanmean');
