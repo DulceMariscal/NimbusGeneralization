@@ -202,6 +202,9 @@ else
 end
 post1ep = ep(strcmp(ep.Properties.ObsNames,'Post1_{Early}'),:);
 post2ep = ep(strcmp(ep.Properties.ObsNames,'Post2_{Early}'),:);
+post1lateep = ep(strcmp(ep.Properties.ObsNames,'Post1_{Late}'),:);
+post2lateep = ep(strcmp(ep.Properties.ObsNames,'Post2_{Late}'),:);
+
 for flip = [1,2] %2 legs separate first (flip = 1) and then asymmetry (flip = 2)
 %     the flip asymmetry plots average of summation and the average of
 %     asymmetry.
@@ -215,20 +218,33 @@ for flip = [1,2] %2 legs separate first (flip = 1) and then asymmetry (flip = 2)
         end
 
         fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
-        ph=tight_subplot(1,4,[.03 .005],.04,.04);
+        ph=tight_subplot(1,9,[.03 .005],.04,.04);
+        
     %     flip=true;
 
         % plot after effects only
         adaptDataSubject.plotCheckerboards(newLabelPrefix,refEpOG,fh,ph(1,1),[],flip); %plot OG base
         adaptDataSubject.plotCheckerboards(newLabelPrefix,refEpTR,fh,ph(1,2),[],flip); %plot OG base with shoe
 
-        if (contains(groupID, 'NTS'))%correct post 1 with OG no nimbus, post 2 with OG with nimbus, i.e.,TR
-            adaptDataSubject.plotCheckerboards(newLabelPrefix,post1ep,fh,ph(1,3),refEpOG,flip); %post1 is OG
-            adaptDataSubject.plotCheckerboards(newLabelPrefix,post2ep,fh,ph(1,4),refEpTR,flip); %post2 is with Nimbus(TR)
-        elseif (contains(groupID, 'NTR')) %correct post 1 with TR(nimbus), post 2 with OG (No nimbus)
-            adaptDataSubject.plotCheckerboards(newLabelPrefix,post1ep,fh,ph(1,3),refEpTR,flip); 
-            adaptDataSubject.plotCheckerboards(newLabelPrefix,post2ep,fh,ph(1,4),refEpOG,flip); 
-        end
+%         if (contains(groupID, 'NTS'))%correct post 1 with OG no nimbus, post 2 with OG with nimbus, i.e.,TR
+%             adaptDataSubject.plotCheckerboards(newLabelPrefix,post1ep,fh,ph(1,3),refEpOG,flip); %post1 is OG
+%             adaptDataSubject.plotCheckerboards(newLabelPrefix,post2ep,fh,ph(1,4),refEpTR,flip); %post2 is with Nimbus(TR)
+%         elseif (contains(groupID, 'NTR')) %correct post 1 with TR(nimbus), post 2 with OG (No nimbus)
+%             adaptDataSubject.plotCheckerboards(newLabelPrefix,post1ep,fh,ph(1,3),refEpTR,flip); 
+%             adaptDataSubject.plotCheckerboards(newLabelPrefix,post2ep,fh,ph(1,4),refEpOG,flip); 
+%         end
+        
+        adaptDataSubject.plotCheckerboards(newLabelPrefix,post1ep,fh,ph(1,3),[],flip); 
+        adaptDataSubject.plotCheckerboards(newLabelPrefix,post2ep,fh,ph(1,4),[],flip); 
+        adaptDataSubject.plotCheckerboards(newLabelPrefix,post1lateep,fh,ph(1,5),[],flip); 
+        adaptDataSubject.plotCheckerboards(newLabelPrefix,post2lateep,fh,ph(1,6),[],flip); 
+
+        adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(7,:),fh,ph(1,7),ep(6,:),flip); 
+        title('trans1')
+        adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(10,:),fh,ph(1,8),ep(9,:),flip); 
+        title('trans2')
+        adaptDataSubject.plotCheckerboards(newLabelPrefix,refEpOG,fh,ph(1,9),refEpTR,flip); 
+        title('OG-TRbase')
 
         set(ph(:,1),'CLim',[-1 1]);
         set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*0.5);
@@ -248,10 +264,10 @@ for flip = [1,2] %2 legs separate first (flip = 1) and then asymmetry (flip = 2)
                 mkdir(resDir)
             end
             if flip == 1
-                saveas(fh, [resDir figureSaveId '_CheckerBoard_AE_SpecificBase.png'])
+                saveas(fh, [resDir figureSaveId '_CheckerBoard_AE_NoBase_Trans12.png'])
     %                 saveas(fh, [resDir figureSaveId '_AllEpochCheckerBoard_' num2str(session)],'epsc')
             else
-                saveas(fh, [resDir figureSaveId '_CheckerBoard_AE_SpecificBase_Asym.png'])
+                saveas(fh, [resDir figureSaveId '_CheckerBoard_AE_NoBase_Asym_Trans12.png'])
             end
         end
         
