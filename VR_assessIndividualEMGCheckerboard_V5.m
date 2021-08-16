@@ -22,7 +22,7 @@ clear; close all; clc;
 % changeCondName('CTR_02_2','TM tied 4','TM slow')
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'CTS_03';
+groupID = 'CTS';
 saveResAndFigure = true;
 plotAllEpoch = true;
 plotIndSubjects = true;
@@ -117,7 +117,7 @@ if plotAllEpoch
         set(gcf,'color','w');
 
         if (saveResAndFigure)
-            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/'];
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V15/'];
             if not(isfolder(resDir))
                 mkdir(resDir)
             end
@@ -184,7 +184,7 @@ for flip = [1,2] %2 legs separate first (flip = 1) and then asymmetry (flip = 2)
         set(gcf,'color','w');
 
         if (saveResAndFigure)
-            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/'];
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V15/'];
             if plotGroup
                 resDir = [resDir 'GroupResults/'];
             end
@@ -206,10 +206,15 @@ for flip = [1,2] %2 legs separate first (flip = 1) and then asymmetry (flip = 2)
 end
 
 %% remove bad muscles before regression analysis
+badMuscleNames ={}
 if strcmp(groupID, 'CTS_03')
     badMuscleNames = {'fHIPs'};
 elseif contains(groupID,'CTR_02')
     badMuscleNames = {'fTFLs'};
+elseif contains(groupID,'CTS_04') 
+    badMuscleNames = {'sLGs','fTAs'};
+elseif contains(groupID,'CTS_05') %0.0296
+    badMuscleNames = {'sLGs'};
 % elseif contains(groupID,'CTS') %needs to be reevaluted
 %     badMuscleNames = {'fRFs'};
 end
@@ -226,7 +231,7 @@ newLabelPrefix = removeBadMuscleIndex(badMuscleNames,newLabelPrefix);
 subjectsToPlot = {};
 subjectsToPlotID = {};
 subjectsToPlotResDirs = {};
-resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/'];
+resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V15/'];
 if plotIndSubjects
     subjectsToPlot = normalizedTMFullAbrupt.adaptData;
     subjectsToPlotID = subID;
@@ -235,7 +240,7 @@ end
 if length(subID) > 1 || plotGroup
     subjectsToPlot{end+1} = normalizedTMFullAbrupt;
     subjectsToPlotID{end+1} = groupID;
-    subjectsToPlotResDirs{end+1} = [scriptDir '/RegressionAnalysis/RegModelResults_V14/GroupResults/'];
+    subjectsToPlotResDirs{end+1} = [scriptDir '/RegressionAnalysis/RegModelResults_V15/GroupResults/'];
 end
 
 %set up common epochs
@@ -254,6 +259,7 @@ usefft = 0; normalizeData = 0;
 
 % FIXME: make this code work for CTR
 %             TR: 1,2 trans1; 1,3, trans2; TS: 1,3 for both
+% TR has to think about the options
 for i = 1:length(subjectsToPlot)
     for modelOption = 1:3
         % reset regressor names for each model option, reset reg model versions  
@@ -334,8 +340,10 @@ for i = 1:length(subjectsToPlot)
                 format compact % format loose %(default)
                 modelOption
                 % not normalized first, then normalized, arugmnets order: (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, version, usefft) 
-                runRegression_V3(Data, false, true, [subjectsToPlotID{i} regModelVersion '_modelOption_' num2str(modelOption) 'flip_' num2str(flip)], resDir, saveResAndFigure, regModelVersion, usefft, regressorNames)
-                runRegression_V3(Data, true, true, [subjectsToPlotID{i} regModelVersion '_modelOption_' num2str(modelOption) 'flip_' num2str(flip)], resDir, saveResAndFigure, regModelVersion, usefft, regressorNames)
+                runRegression_V3(Data, false, isa(subjectsToPlot{1},'groupAdaptationData'), [subjectsToPlotID{i} regModelVersion '_modelOption_' num2str(modelOption) 'flip_' num2str(flip)], subjectsToPlotResDirs{i}, saveResAndFigure, regModelVersion, usefft, regressorNames)
+                runRegression_V3(Data, true, isa(subjectsToPlot{1},'groupAdaptationData'), [subjectsToPlotID{i} regModelVersion '_modelOption_' num2str(modelOption) 'flip_' num2str(flip)], subjectsToPlotResDirs{i}, saveResAndFigure, regModelVersion, usefft, regressorNames)
+%                 function runRegression_V3(Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, version, usefft, regressorNames) 
+
             else
                 asymCos = findCosBtwAsymOfEpochs(Data, size(currLabelPrefix,2))
             end

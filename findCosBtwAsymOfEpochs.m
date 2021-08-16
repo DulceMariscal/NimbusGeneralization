@@ -1,4 +1,4 @@
-function [cosAsym, cosAsymNormalized] = findCosBtwAsymOfEpochs(Data, numLabels, variableNames)
+function cosAsym = findCosBtwAsymOfEpochs(Data, numLabels, variableNames)
 % find cosine between the asymmetry between 2 legs of each regressors and transition1 and transition 2.
     if nargin < 3
         variableNames = {'Adapt','WithinContextSwitch','MultiContextSwitch','Trans1','Trans2'}; %default names
