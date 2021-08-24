@@ -18,14 +18,15 @@
 clear; close all; clc;
 
 %temporary rename conditions for ctr 02 to make OG1 the OG base 
-% changeCondName('CTR_02_2','OG 1','OG base')
+% changeCondName('CTR_05','TM fast','TM tied 1')
+% changeCondName('CTR_02_2','TM tied 4','TM slow')
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'CTR_03';
+groupID = 'CTR';
 saveResAndFigure = true;
-plotAllEpoch = false;
-plotIndSubjects = true;
-plotGroup = false;
+plotAllEpoch = true;
+plotIndSubjects = false;
+plotGroup = true;
 
 scriptDir = fileparts(matlab.desktop.editor.getActiveFilename); 
 files = dir ([scriptDir '/data/' groupID '*params.mat']);
@@ -38,15 +39,16 @@ for i = 1:n_subjects
 end
 subID
 
-regModelVersion =  'TR' %'default'
-% if (contains(groupID, 'CTS') || contains(groupID, 'VROG'))
-%     regModelVersion = 'TS'
-% elseif (contains(groupID, 'CTR'))
-%     regModelVersion = 'TR'
-% end
+regModelVersion =  'default'; %'default'
+if (contains(groupID, 'CTS') || contains(groupID, 'VROG'))
+    regModelVersion = 'TS'
+elseif (contains(groupID, 'CTR'))
+    regModelVersion = 'TR'
+end
 
 %% load and prep data
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
+normalizedTMFullAbrupt.removeBadStrides;
 
 ss =normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
 
@@ -63,7 +65,8 @@ n_muscles = length(muscleOrder);
 n_subjects = length(subID);
 
 ep=defineEpochVR_OG_With2ShortSplit('nanmean');
-refEp = defineReferenceEpoch('TM tied 1(fast50)',ep);
+% refEp = defineReferenceEpoch('TM tied 1(fast50)',ep);
+refEp = defineReferenceEpoch('TRbase',ep);
 refEpLate = defineReferenceEpoch('Adaptation',ep);
 refEpSlow = defineReferenceEpoch('TM tied 4(slow)',ep);
 
@@ -71,7 +74,7 @@ newLabelPrefix = defineMuscleList(muscleOrder);
 
 % normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,ep(1,:));
 normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,refEp);
-
+normalizedTMFullAbrupt.removeBadStrides;
 
 ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
 %ll = normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^(s|f)[A-Z]+_s');
@@ -151,7 +154,7 @@ if plotAllEpoch
         set(gcf,'color','w');
 
         if (saveResAndFigure)
-            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/'];
             if not(isfolder(resDir))
                 mkdir(resDir)
             end
@@ -160,6 +163,71 @@ if plotAllEpoch
         end
     end
 end
+
+%% plot subsets of epochs: AE with context specific baseline correction
+%AE only pertains to session 1 and long protocols.
+refEpOG = defineReferenceEpoch('OGbase',ep);
+refEpTR = defineReferenceEpoch('TRbase',ep);
+post1ep = ep(strcmp(ep.Properties.ObsNames,'Post1_{Early}'),:);
+post2ep = ep(strcmp(ep.Properties.ObsNames,'Post2_{Early}'),:);
+for flip = [1,2] %2 legs separate first (flip = 1) and then asymmetry (flip = 2)
+%     the flip asymmetry plots average of summation and the average of
+%     asymmetry.
+    for i = 1:n_subjects
+        if plotGroup
+            adaptDataSubject = normalizedTMFullAbrupt;
+            figureSaveId = groupID;
+        else
+            adaptDataSubject = normalizedTMFullAbrupt.adaptData{1, i}; 
+            figureSaveId = subID{i};
+        end
+
+        fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
+        ph=tight_subplot(1,4,[.03 .005],.04,.04);
+
+        % plot after effects only
+        adaptDataSubject.plotCheckerboards(newLabelPrefix,refEpOG,fh,ph(1,1),[],flip); %plot OG base
+        adaptDataSubject.plotCheckerboards(newLabelPrefix,refEpTR,fh,ph(1,2),[],flip); %plot OG base with shoe
+
+        if (contains(groupID, 'TS'))%correct post 1 with OG no nimbus, post 2 with OG with nimbus, i.e.,TR
+            adaptDataSubject.plotCheckerboards(newLabelPrefix,post1ep,fh,ph(1,3),refEpOG,flip); %post1 is OG
+            adaptDataSubject.plotCheckerboards(newLabelPrefix,post2ep,fh,ph(1,4),refEpTR,flip); %post2 is with Nimbus(TR)
+        elseif (contains(groupID, 'TR')) %correct post 1 with TR(nimbus), post 2 with OG (No nimbus)
+            adaptDataSubject.plotCheckerboards(newLabelPrefix,post1ep,fh,ph(1,3),refEpTR,flip); 
+            adaptDataSubject.plotCheckerboards(newLabelPrefix,post2ep,fh,ph(1,4),refEpOG,flip); 
+        end
+
+        set(ph(:,1),'CLim',[-1 1]);
+        set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*0.5);
+        set(ph,'FontSize',8)
+        pos=get(ph(1,end),'Position');
+        axes(ph(1,end))
+        colorbar
+        set(ph(1,end),'Position',pos);
+        set(gcf,'color','w');
+
+        if (saveResAndFigure)
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/'];
+            if plotGroup
+                resDir = [resDir 'GroupResults/'];
+            end
+            if not(isfolder(resDir))
+                mkdir(resDir)
+            end
+            if flip == 1
+                saveas(fh, [resDir figureSaveId '_CheckerBoard_AE_SpecificBase.png'])
+    %                 saveas(fh, [resDir figureSaveId '_AllEpochCheckerBoard_' num2str(session)],'epsc')
+            else
+                saveas(fh, [resDir figureSaveId '_CheckerBoard_AE_SpecificBase_Asym.png'])
+            end
+        end
+        
+        if plotGroup
+            break
+        end
+    end
+end
+
 %% Regressor V2, prepare data for regressor checkerboards and regression model
 % - Update from disucssion on Tuesday MAy 4, 2021
 % - Refer to OneNote for naming details
@@ -170,7 +238,7 @@ end
 
 usefft = 0; normalizeData = 0;
 
-for splitCount = [3 5] 
+for splitCount = 3
     splitCount 
     if splitCount == 1 %first short split, fast baseline - split
         ep=defineEpochVR_OG_UpdateV3('nanmean');
@@ -179,7 +247,7 @@ for splitCount = [3 5]
         ep=defineEpochVR_OG_UpdateV4('nanmean');
         refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})2', ep);
     elseif splitCount == 3 %EMG_pos (Pos Short - fast base );  EMG_neg (Neg Short 2 - Slow base )
-        ep=defineEpochVR_OG_UpdateV5('nanmean');
+        ep=defineEpochVR_OG_UpdateV5('nanmean', groupID);
         refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
     elseif splitCount == 4 %2nd short split positive, slow baseline
         ep=defineEpochVR_OG_UpdateV6('nanmean');
@@ -226,7 +294,7 @@ for splitCount = [3 5]
             set(ph(1,end),'Position',pos);
             set(gcf,'color','w');
 
-            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/'];
             if (saveResAndFigure)
                 if not(isfolder(resDir))
                     mkdir(resDir)
@@ -247,74 +315,77 @@ for splitCount = [3 5]
     end
     %% plot checkerboards and run regression per group
     if length(subID) > 1 || plotGroup
-        
-        if splitCount == 1 %first short split, fast baseline - split
-            ep=defineEpochVR_OG_UpdateV3('nanmean');
-            refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
-        elseif splitCount == 2%2nd short split, slow baseline - split
-            ep=defineEpochVR_OG_UpdateV4('nanmean');
-            refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})2', ep);
-        elseif splitCount == 3 %EMG_pos (Pos Short - fast base );  EMG_neg (Neg Short 2 - Slow base )
-            ep=defineEpochVR_OG_UpdateV5('nanmean');
-            refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
-        elseif splitCount == 4  %EMG_pos (Pos Short - fast base );  EMG_neg (Pos Short 2 - Slow base )
-            ep=defineEpochVR_OG_UpdateV6('nanmean');
-            refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
-        elseif splitCount == 5  %EMG_pos (Pos Short - fast base );  EMG_neg (Pos Short  - Slow base )
-            ep=defineEpochVR_OG_UpdateV7('nanmean');
-            refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
-            
-        end
-        
-        refEpAdaptLate = defineReferenceEpoch('Task_{Switch}',ep);
-        refEpPost1Late= defineReferenceEpoch('Post1_{Late}',ep);
-        refEp= defineReferenceEpoch('TMbase',ep); %fast tied 1 if short split 1, slow tied if 2nd split
-        
-        fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
-        ph=tight_subplot(1,5,[.03 .005],.04,.04);
-        flip=true;
-
-        Data = {}; %in order: adapt, dataEnvSwitch, dataTaskSwitch, dataTrans1, dataTrans2
-        if usefft
-            [~,~,labels,Data{1},dataRef2]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(4,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
-        else
-            [~,~,labels,Data{1},dataRef2]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
-        end
-        %all labels should be the same, no need to save again.
-        [~,~,~,Data{2},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,refPosShort,fh,ph(1,2),ep(4,:),flip); % Noadapt (env-driven), TM base - EMG_on(+)
-        if ~strcmp(groupID, 'CTR')
-            [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),ep(5,:),flip); % OG base - TR base, env switching
-        else %CTR TR base is fast but post is mid, so should use mid for env transition
-            [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),refEp,flip); % OG base - TR base, env switching
-        end
-        [~,~,~,Data{4},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS}, transition 1
-        [~,~,~,Data{5},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpPost1Late,flip); %TM post VR early - OG post late, transition 2
-        %     [~,~,labels,dataE{1},dataRef{1}]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
-
-        set(ph(:,1),'CLim',[-1 1]);
-        %     set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*2);
-        set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*1.5);
-        set(ph,'FontSize',8)
-        pos=get(ph(1,end),'Position');
-        axes(ph(1,end))
-        colorbar
-        set(ph(1,end),'Position',pos);
-        set(gcf,'color','w');
-
-        resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/GroupResults/'];
-        if (saveResAndFigure)    
-            if not(isfolder(resDir))
-                mkdir(resDir)
+        for flip = [1,2]
+            if splitCount == 1 %first short split, fast baseline - split
+                ep=defineEpochVR_OG_UpdateV3('nanmean');
+                refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
+            elseif splitCount == 2%2nd short split, slow baseline - split
+                ep=defineEpochVR_OG_UpdateV4('nanmean');
+                refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})2', ep);
+            elseif splitCount == 3 %EMG_pos (Pos Short - fast base );  EMG_neg (Neg Short 2 - Slow base )
+                ep=defineEpochVR_OG_UpdateV5('nanmean', groupID);
+                refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
+            elseif splitCount == 4  %EMG_pos (Pos Short - fast base );  EMG_neg (Pos Short 2 - Slow base )
+                ep=defineEpochVR_OG_UpdateV6('nanmean');
+                refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
+            elseif splitCount == 5  %EMG_pos (Pos Short - fast base );  EMG_neg (Pos Short  - Slow base )
+                ep=defineEpochVR_OG_UpdateV7('nanmean');
+                refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
             end
-            saveas(fh, [resDir groupID '_group_Checkerboard_ver' num2str(usefft) num2str(normalizeData) regModelVersion 'split_' num2str(splitCount) '.png'])
-            saveas(fh, [resDir groupID '_group_Checkerboard_ver' num2str(usefft) num2str(normalizeData) regModelVersion 'split_' num2str(splitCount)], 'epsc')
-        end
 
-        % run regression and save results
-        format compact % format loose %(default)
-        % not normalized first, then normalized, arugmnets order: (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, version, usefft) 
-        runRegression_V3(Data, false, true, [groupID regModelVersion 'split_' num2str(splitCount)], resDir, saveResAndFigure, regModelVersion, usefft)
-        runRegression_V3(Data, true, true, [groupID regModelVersion 'split_' num2str(splitCount)], resDir, saveResAndFigure, regModelVersion, usefft)
+            refEpAdaptLate = defineReferenceEpoch('Task_{Switch}',ep);
+            refEpPost1Late= defineReferenceEpoch('Post1_{Late}',ep);
+            refEp= defineReferenceEpoch('TMbase',ep); %fast tied 1 if short split 1, slow tied if 2nd split
+
+            fh=figure('Units','Normalized','OuterPosition',[0 0 1 1]);
+            ph=tight_subplot(1,5,[.03 .005],.04,.04);
+
+            Data = {}; %in order: adapt, dataEnvSwitch, dataTaskSwitch, dataTrans1, dataTrans2
+            if usefft
+                [~,~,labels,Data{1},dataRef2]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(4,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
+            else
+                [~,~,labels,Data{1},dataRef2]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(3,:),fh,ph(1,1),refEp,flip); %  EMG_split(-) - TM base VR, adaptation
+            end
+            %all labels should be the same, no need to save again.
+            [~,~,~,Data{2},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,refPosShort,fh,ph(1,2),ep(4,:),flip); % Noadapt (env-driven), TM base - EMG_on(+)
+            if ~strcmp(groupID, 'CTR')
+                [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),ep(5,:),flip); % OG base - TR base, env switching
+            else %CTR TR base is fast but post is mid, so should use mid for env transition
+                [~,~,~,Data{3},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(1,:),fh,ph(1,3),refEp,flip); % OG base - TR base, env switching
+            end
+            [~,~,~,Data{4},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(8,:),fh,ph(1,4),refEpAdaptLate,flip); %OGafter - Adaptation_{SS}, transition 1
+            [~,~,~,Data{5},~] = normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep(11,:),fh,ph(1,5),refEpPost1Late,flip); %TM post VR early - OG post late, transition 2
+            %     [~,~,labels,dataE{1},dataRef{1}]=normalizedTMFullAbrupt.plotCheckerboards(newLabelPrefix,ep,fh,ph(1,2:end),refEp,flip);%Second, the rest:
+
+            set(ph(:,1),'CLim',[-1 1]);
+            %     set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*2);
+            set(ph(:,2:end),'YTickLabels',{},'CLim',[-1 1]*1.5);
+            set(ph,'FontSize',8)
+            pos=get(ph(1,end),'Position');
+            axes(ph(1,end))
+            colorbar
+            set(ph(1,end),'Position',pos);
+            set(gcf,'color','w');
+
+            resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/GroupResults/'];
+            if (saveResAndFigure)    
+                if not(isfolder(resDir))
+                    mkdir(resDir)
+                end
+                saveas(fh, [resDir groupID '_group_Checkerboard_ver' num2str(usefft) num2str(normalizeData) regModelVersion 'split_' num2str(splitCount) 'flip_' num2str(flip) '.png'])
+%                 saveas(fh, [resDir groupID '_group_Checkerboard_ver' num2str(usefft) num2str(normalizeData) regModelVersion 'split_' num2str(splitCount) 'flip_' num2str(flip)], 'epsc')
+            end
+
+            if flip ~= 2 %run regression on the full (not asymmetry) data
+                % run regression and save results
+                format compact % format loose %(default)
+                % not normalized first, then normalized, arugmnets order: (Data, normalizeData, isGroupData, dataId, resDir, saveResAndFigure, version, usefft) 
+                runRegression_V3(Data, false, true, [groupID regModelVersion 'split_' num2str(splitCount) 'flip_' num2str(flip)], resDir, saveResAndFigure, regModelVersion, usefft)
+                runRegression_V3(Data, true, true, [groupID regModelVersion 'split_' num2str(splitCount) 'flip_' num2str(flip)], resDir, saveResAndFigure, regModelVersion, usefft)
+            else
+                asymCos = findCosBtwAsymOfEpochs(Data, size(newLabelPrefix,2))
+            end
+        end
     end
 end
 
@@ -350,7 +421,7 @@ for i = 1:n_subjects
     set(ph(1,end),'Position',pos);
     set(gcf,'color','w');
 
-    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V13/'];
+    resDir = [scriptDir '/RegressionAnalysis/RegModelResults_V14/'];
     if saveResAndFigure
         if not(isfolder(resDir))
             mkdir(resDir)
