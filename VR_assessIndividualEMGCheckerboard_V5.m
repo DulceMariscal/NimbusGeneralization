@@ -48,7 +48,7 @@ end
 
 %% load and prep data
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
-% normalizedTMFullAbrupt=normalizedTMFullAbrupt.removeBadStrides;
+normalizedTMFullAbrupt=normalizedTMFullAbrupt.removeBadStrides;
 
 ss =normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
 
