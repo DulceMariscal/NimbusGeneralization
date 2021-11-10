@@ -4,17 +4,17 @@ function [eps] = defineEpochNIM_OG_UpdateV4(nantype, subjID)
 % names={'WithinEnvSwitch (-\DeltaEMG_{on(+)})2','Adapt (\DeltaEMG_{on(-)})2','PosShort','ShortSplit','WithinEnvSwitchFromShoe (-\DeltaEMG_{on(+)})2','PosSplit_{late} - OG_{post}(-\DeltaEMG_{off(+)})','ShoeSplit_{late} - OG_{post}(-Shoe\DeltaEMG_{off(+)})','OGPostShoe','OGPostPosShort','NegSplit_{late} - OG_{post}(-\DeltaEMG_{off(-)})','SwapShoeSplit_{late} - OG_{post}(-Shoe\DeltaEMG_{off(-)})','OGPostNegShort','-\DeltaEMG_{on(-)}'};
 names={'WithinEnvSwitch (-\DeltaEMG_{on(+)})2','Adapt (\DeltaEMG_{on(-)})2','PosShort','ShortSplit','-Shoe\DeltaOn(+)2','-\Deltaoff(+)','-Shoe\Deltaoff(+)','OGPostShoe','OGPostPosShort','-\Deltaoff(-)','-Shoe\Deltaoff(-)','OGPostNegShort','-\Deltaon(-)','TMslow'};
 
-if strcmp(subjID, 'NTR_02')
-    exemptFirstShortSplit = 23;
-elseif strcmp(subjID, 'NTR_03')
-    exemptFirstShortSplit = 24;
-elseif strcmp(subjID, 'NTR_04')
-    exemptFirstShortSplit = 17;    
-elseif  strcmp(subjID, 'NTR')
-    exemptFirstShortSplit = 24; 
-else
-    exemptFirstShortSplit = 24;
-end
+% if strcmp(subjID, 'NTR_02')
+%     exemptFirstShortSplit = 23;
+% elseif strcmp(subjID, 'NTR_03')
+%     exemptFirstShortSplit = 24;
+% elseif strcmp(subjID, 'NTR_04')
+%     exemptFirstShortSplit = 17;    
+% elseif  strcmp(subjID, 'NTR')
+%     exemptFirstShortSplit = 24; 
+% else
+    exemptFirstShortSplit = 1;
+% end
 exemptFirstShortSplit
 
 eps=defineEpochs(names,...
