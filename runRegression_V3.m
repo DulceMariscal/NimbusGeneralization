@@ -71,13 +71,18 @@ function runRegression_V3(Data, normalizeData, isGroupData, dataId, resDir, save
         trans1Model = [regressorNames{4} '~' regressorNames{1} '+' regressorNames{2} '-1'];
         trans2Model = [regressorNames{5} '~' regressorNames{1} '+' regressorNames{3} '-1'];
     elseif strcmpi(version,'ts') %testing group
-        trans1Model = [regressorNames{4} '~' regressorNames{1} '+' regressorNames{3} '-1'];
+        trans1Model = [regressorNames{4} '~' regressorNames{1} '+' regressorNames{2} '-1'];
         trans2Model = [regressorNames{5} '~' regressorNames{1} '+' regressorNames{3} '-1'];
+    elseif  strcmpi(version,'Adaptive_EnvTransition') %testing group
+        trans1Model = [regressorNames{4} '~' regressorNames{1} '+' regressorNames{2} '-1'];
+        trans2Model = [regressorNames{5} '~' regressorNames{1} '+' regressorNames{2} '-1'];
+        
     end
     
     %%% Run regression analysis V2
     tableData=table(Data{1},Data{2},Data{3},Data{4},Data{5},'VariableNames',regressorNames);
     fitTrans1NoConst=fitlm(tableData,trans1Model)%exclude constant
+    
     Rsquared = fitTrans1NoConst.Rsquared
     %compute adaptation and switch index
     beta1_index = computeBetaIndex(fitTrans1NoConst);
@@ -92,9 +97,32 @@ function runRegression_V3(Data, normalizeData, isGroupData, dataId, resDir, save
     %compute and print out relative vector norm to assess the length
     %difference between regressors
     fprintf('\n\n')
-    vec_norm = vecnorm(fitTrans1NoConst.Variables{:,:});
+    vec_norm = vecnorm(fitTrans1NoConst.Variables{:,:})
     relNom = normalize(vec_norm,'norm',1)
-        
+    
+    fprintf('\n\n')
+    %Stepwise regression 
+    X=[Data{1},Data{2},Data{3}];
+    z= [Data{1},Data{2},Data{3},Data{4},Data{5}];
+    
+%     corrcoef(X,'Rows','complete')
+    disp('Correlation betwen regressor and dependent variables')
+    corrcoef(z,'Rows','complete')
+    
+    fprintf('\n\n')
+    disp('Colinearity between the regressors')
+    vif(X)
+    
+    Y1=Data{4};
+    Y2=Data{5};
+    fprintf('\n\n')
+    disp('Transition 1')
+    beta1=stepwisefit(X,Y1,'PRemove',0.05)
+    
+    fprintf('\n\n')
+    disp('Transition 2')
+    beta2=stepwisefit(X,Y2, 'PRemove',0.05)
+    
     if saveResAndFigure
         if not(isfolder(resDir))
             mkdir(resDir)
