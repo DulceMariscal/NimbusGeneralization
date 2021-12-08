@@ -63,7 +63,6 @@ xt=[0:phaseSize:MM];
 
 fs=16; %FontSize
 
-
 set(gcf,'color','w')
 hold on
 
@@ -88,7 +87,7 @@ for m=1:length(muscle)
             end
             
             if normalize==1
-                norm=nanmean(nanmax(squeeze(norm.Data)));
+                norm=nanmax(nanmean(squeeze(norm.Data),2));
                 data.Data=bsxfun(@rdivide,data.Data,norm);
             end
             ph=subplot(row,colum,lm(m)+l-1);
