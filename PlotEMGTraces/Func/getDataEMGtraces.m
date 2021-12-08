@@ -32,14 +32,14 @@ else
 end
 
 if late==1
-    data=data.getPartialStridesAsATS(size(data.Data,3)-strides:size(data.Data,3));
+    data=data.getPartialStridesAsATS(size(data.Data,3)-strides-5:size(data.Data,3)-5);
     
 elseif late==0
     if size(data.Data,3)>strides
         
-        data=data.getPartialStridesAsATS(1:strides);
+        data=data.getPartialStridesAsATS(2:strides);
     else
-        data=data.getPartialStridesAsATS(1:size(data.Data,3));
+        data=data.getPartialStridesAsATS(2:size(data.Data,3));
         warning(strcat([cond{1}, ' does not have ', num2str(strides),' strides']))
     end
 else
