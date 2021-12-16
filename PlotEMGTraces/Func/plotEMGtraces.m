@@ -88,8 +88,14 @@ for m=1:length(muscle)
             end
             
             if normalize==1
-                norm=nanmean(nanmax(squeeze(norm.Data)));
-                data.Data=bsxfun(@rdivide,data.Data,norm);
+%                 norm=nanmax(nanmean(squeeze(norm.Data)));
+%                 data.Data=bsxfun(@rdivide,data.Data,norm);
+                 normM=max(median(norm.Data));
+                 normm=min(median(norm.Data));
+                 data.Data=(data.Data-normm)/(normM-normm);
+                
+
+                
             end
             ph=subplot(row,colum,lm(m)+l-1);
             data.plot(fh,ph,condColors(c,:),[],0,[-49:0],prc,true);
