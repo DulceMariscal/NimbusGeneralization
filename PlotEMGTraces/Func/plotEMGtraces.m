@@ -9,7 +9,7 @@ function fh=plotEMGtraces(expData,conds,muscle,late,strides,normalize,normCond)
 %late - 1 if you want to plot the last strides 0 if yo uwant to plot
 %the initial strides
 %strides - number of strides that you want to plot
-%normalize - 1 to normalize the data 
+%normalize - 1 to normalize the data
 %normCond - Condtions by which to normalize the data
 %
 %OUTPUT:
@@ -25,12 +25,12 @@ function fh=plotEMGtraces(expData,conds,muscle,late,strides,normalize,normCond)
 row=5;
 colum=6;
 
-%% 
+%%
 if nargin<6 || isempty(normalize)
     normalize=0;
 end
 
-if normalize==1 && isempty(normCond)   
+if normalize==1 && isempty(normCond)
    error('You need to define which conditions to use for normalization')
 end
 
@@ -50,7 +50,7 @@ colorOrder=[p_red; p_orange; p_fade_green; p_fade_blue; p_plum; p_green; p_blue;
 condColors=colorOrder;
 if length(conds)>length(colorOrder)
     condColors=[colorOrder; rand(1)*colorOrder];
-end 
+end
 
 ph1=[];
 prc=[16,84];
@@ -63,7 +63,6 @@ xt=[0:phaseSize:MM];
 
 fs=16; %FontSize
 
-
 set(gcf,'color','w')
 hold on
 
@@ -71,8 +70,8 @@ for m=1:length(muscle)
     leg={'R','L'};
     for l=1:2
         for c=1:length(conds)
-            
-            
+
+
             if l==1
                 data=getDataEMGtraces(expData,muscle{m},conds(c),leg{l},late,strides);
                 if normalize==1
@@ -86,21 +85,23 @@ for m=1:length(muscle)
                 end
                 tit=['L' muscle{m}];
             end
-            
+
             if normalize==1
+
 %                 norm=nanmax(nanmean(squeeze(norm.Data)));
 %                 data.Data=bsxfun(@rdivide,data.Data,norm);
                  normM=max(median(norm.Data));
                  normm=min(median(norm.Data));
                  data.Data=(data.Data-normm)/(normM-normm);
-                
 
-                
+
+
+
             end
             ph=subplot(row,colum,lm(m)+l-1);
             data.plot(fh,ph,condColors(c,:),[],0,[-49:0],prc,true);
-            
-            
+
+
         end
         axis tight
         ylabel('')
@@ -108,12 +109,12 @@ for m=1:length(muscle)
         grid on
         ll=findobj(ph,'Type','Line');
     end
-    
-    
+
+
 end
 if late==1
     title('Late Phases')
-    
+
 else
     title('Early Phases')
 end
