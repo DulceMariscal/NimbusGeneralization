@@ -32,7 +32,7 @@ else
 end
 
 if late==1
-    data=data.getPartialStridesAsATS(size(data.Data,3)-strides-5:size(data.Data,3)-5);
+    data=data.getPartialStridesAsATS(size(data.Data,3)-strides:size(data.Data,3));
     
 elseif late==0
     if size(data.Data,3)>strides
