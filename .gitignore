@@ -14,3 +14,4 @@ gui/.DS_Store
 *.eps
 *.pdf
 *fig
+*.mat
