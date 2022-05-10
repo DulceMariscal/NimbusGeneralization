@@ -1,19 +1,27 @@
 clc
 
 groups={'CTR','CTS','NTR','NTS'};
-groups={'CTR','CTS'};
+% groups={'CTR','CTS'};
 biasremove=1;
 
 Epoch={'Post1_{Early}','Ref:','Post1-Adapt_{SS}'};
-ep=1;
+ep=3;
 figure
-for g=1:2
-    xx=[1 2 6 7];
+
+
+for g=1:4
+    xx=[1 2 5 6];
+    
     load(['Norm_', groups{g},'_',num2str(biasremove)])
     ss=0;
     temp=contains(IndvTable.Epoch,Epoch{ep});
-    bar(xx(g), meanTable.(groups{g})(temp))
-for s=2:6
+    bar(xx(g), IndvTable.TestAvg(temp))
+    if contains('NTS',groups{g})
+        sub=2:4;
+    else
+        sub=2:6;
+    end
+for s=sub
     ss=ss+1;
     
     names=IndvTable.Properties.VariableNames;
@@ -25,7 +33,7 @@ for s=2:6
     plot(xx(g)+.1,data(ss,g),'*k')
        
 end 
-    errorbar(xx(g),meanTable.(groups{g})(temp),std(data(:,g))/sqrt(5),'k')
+    errorbar(xx(g),IndvTable.TestAvg(temp),std(data(:,g))/sqrt(5),'k')
 end 
 xticks(xx)
 xticklabels(groups)
@@ -47,5 +55,34 @@ elseif ep==3
 end
 set(gcf,'color','w');
 
-% [p,tbl,stats] = anova1(data);
-% multcompare(stats)
+
+%% Power Analysis 
+clc
+%controls - Early Post 1 
+control=1
+Epoch={'Post1_{Early}'};
+if control==1
+load('Norm_CTR_1')
+else
+load('Norm_NTR_1')   
+end
+temp=contains(IndvTable.Epoch,Epoch);
+TR_GroupAvg=IndvTable.TestAvg(temp);
+TR_GroupSD=IndvTable.SD(temp);
+
+if control==1
+load('Norm_CTS_1')
+else
+load('Norm_NTS_1')   
+end
+
+temp=contains(IndvTable.Epoch,Epoch);
+TS_GroupAvg=IndvTable.TestAvg(temp);
+TS_GroupSD=IndvTable.SD(temp);
+
+if control==1
+disp(['Power Analysis with Controls for ' Epoch{1}])
+else
+disp(['Power Analysis with Nimbus for ' Epoch{1}])    
+end
+n = sampsizepwr('t2',[TR_GroupAvg TR_GroupSD],[TS_GroupAvg],0.80)
