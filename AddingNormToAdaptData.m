@@ -1,29 +1,23 @@
-%% Adding Norm to adaptData
+%% Adding Norm to groupAdaptationData
 
-% Load data and Find norms for Specified conditons
-%This code will find Euclidean norms for specified conditions
-%Created by KF 3/3/22
+% Load data and Find norms for the entire time courses
+%This code will find Euclidean norms for the entire time courses
+%Created by DMM0 5/2022
 
-% 1)load and prep data - assumes that data files are in the current
-% directory
-% 2)Specifies number of strides necessary for running average (step 4) to
-%loop through. This may need to be commented out if
-% 3)Removes bad muscles for individual subjects - will not run if used for
-%group data
-% 4)Loops through EMG data (bin width 5) and records norm
+% 1) load subjects
+% 2) EMG normalization of baseline
+% 3) Remove bad muscles making then zero. We are computing the norm
+% 4) Computing Stride by stride norm
+% 5) Compute bias removed stride by stride norm
+% 6) Saving params file 
 
-% Code is heavily influcned from LabTools, EMGCheckerboard_regressions,
-% Bootstrapping_Cl, and loadEMGParams_controls
 
-%FindVectorsV1 inlcudes lines that are commented out from above source code
-
+%% load subjects
 
 clear; clc; close all
 
-% load('BiasData.mat')
-
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'ATR';
+groupID = 'PATR03';
 saveResAndFigure = false;
 plotAllEpoch = true;
 plotIndSubjects = true;
@@ -36,19 +30,12 @@ norms=[];
 norm1 = [];
 norm2 = [];
 
-%for j = 1:length(files)
-
-% currentfiles = files(j); %allows you to choose which subject to analyze - can be commented out to analyze group, but muscles can not be individually removed in this case
-
-% currentfiles = files(1);
-% n_subjects = size(currentfiles,1);
-
 n_subjects = size(files,1);
 subID = cell(1, n_subjects);
 sub=cell(1,n_subjects);
 
 for i = 1:n_subjects
-    %      sub{i} = currentfiles(i).name; %for individual subjects
+
     sub{i} = files(i).name; %for plotting group
     if kinenatics==0
         subID{i} = sub{i}(1:end-10);
@@ -65,7 +52,8 @@ regModelVersion =  'default'; %'default'
 %% 1: load and prep data
 
 normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
-% normalizedTMFullAbrupt=normalizedTMFullAbrupt.removeBadStrides;
+% normalizedTMFullAbrupt=normalizedTMFullAbrupt.removeBadStrides; % we are
+% going to add the EMGnorm for all strides we can't removeBadStrides 
 
 
 subjectsToPlot = {}; % from SLcode
@@ -112,7 +100,7 @@ subjectsToPlotID{end+1} = groupID;% from SLcode
 % %NTS
 if contains(groupID,'NTS')
     badSubjID = {'NTS_01', 'NTS_03', 'NTS_05','NTS_06','NTS_07'}; %badSubj and muscle are index matched, if want to remove group, put group ID here
-    badMuscles = {{'sHIPs', 'fHIPs','fSEMTs','sSEMTs'},{'sLGs', 'fLGs'},{'sBFs', 'fBFs','fVLs','sVLs','fVMs','sVMs'},{'sHIPs','fHIPs'},{'fRFs','sRFs'}}; %labels in group ID will be removed for all regression and AE computations;
+    badMuscles = {{'sHIPs', 'fHIPs','fSEMTs','sSEMTs'},{'sLGs', 'fLGs'},{'sBFs', 'fBFs','fVLs','sVLs','fVMs','sVMs'},{'sHIPs','fHIPs','sSOLs','fSOLs'},{'fRFs','sRFs'}}; %labels in group ID will be removed for all regression and AE computations;
 
 elseif contains(groupID,'NTR')
     %NTR
@@ -122,7 +110,7 @@ elseif contains(groupID,'NTR')
 elseif contains(groupID,'CTR')
     % %CTR
     badSubjID = {'CTR_02','CTR_05'}; %badSubj and muscle are index matched, if want to remove group, put group ID here
-    badMuscles = {{'sTFLs', 'fTFLs','fPERs','sPERs','fTAs','sTAs'},{'sHIPs', 'fHIPs','sPERs','fPERs'}}; %labels in group ID will be removed for all regression and AE computations;
+    badMuscles = {{'sTFLs', 'fTFLs','fPERs','sPERs','fTAs','sTAs','sRFs','fRFs'},{'sHIPs', 'fHIPs','sPERs','fPERs'}}; %labels in group ID will be removed for all regression and AE computations;
 
 elseif contains(groupID,'CTS')
     % %CTS
@@ -209,13 +197,8 @@ for idx = 1:numel(subID)
     temp=[];
     aux1=[];
     
-    %     for j = 1: %possibly loop through all subjects with iteration j?
     subjIdx = find(contains(normalizedTMFullAbrupt.ID, subID{idx}));
-    %subjIdx = find(contains(sub,(badSubjID{idxToRemove})));
-    
-    %subjIdx = find(strcmp(files.name, badSubjID{idxToRemove}));
-    %          subjIdx = find(strcmp(badSubjID{idxToRemove},files.name));
-    %          subjIdx = find(contains(subjectsToPlot{end}.ID, badSubjID{idxToRemove}));
+
     
     
     
@@ -283,14 +266,9 @@ for idx = 1:numel(subID)
     temp=[];
     data3=[];
     data3asym=[];
-    %     for j = 1: %possibly loop through all subjects with iteration j?
+
     subjIdx = find(contains(normalizedTMFullAbrupt.ID, subID{idx}));
-    %subjIdx = find(contains(sub,(badSubjID{idxToRemove})));
-    
-    %subjIdx = find(strcmp(files.name, badSubjID{idxToRemove}));
-    %          subjIdx = find(strcmp(badSubjID{idxToRemove},files.name));
-    %          subjIdx = find(contains(subjectsToPlot{end}.ID, badSubjID{idxToRemove}));
-    
+
     
     
     if ~isempty(subjIdx)
@@ -369,7 +347,7 @@ for idx = 1:numel(subID)
     
 end
 
-%%
+%% SAVE GROUP DATA 
 
 % if contains(groupID,'NTS')
 %     
@@ -387,4 +365,4 @@ end
 %     CTR= normalizedTMFullAbrupt;
 % end
 
-save([groupID, 'groupData.mat'], 'group')
+save([groupID, 'groupDataWO_CTR6.mat'], 'group')
