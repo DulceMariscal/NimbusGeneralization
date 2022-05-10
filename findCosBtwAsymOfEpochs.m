@@ -1,7 +1,7 @@
 function cosAsym = findCosBtwAsymOfEpochs(Data, numLabels, variableNames)
 % find cosine between the asymmetry between 2 legs of each regressors and transition1 and transition 2.
     if nargin < 3
-        variableNames = {'Adapt','WithinContextSwitch','MultiContextSwitch','Trans1','Trans2'}; %default names
+        variableNames = {'Adapt','NoAdapt','ContextSwitch','Trans1','Trans2'}; %default names
     end    
     asymData = Data;
     cosAsym = nan(2,3);
@@ -15,7 +15,7 @@ function cosAsym = findCosBtwAsymOfEpochs(Data, numLabels, variableNames)
         currAsym = reshape(asymData{i}(:,1:numLabels/2), [],1);
         cosAsym (1,i) = cosine(currAsym, asym_trans1);
         cosAsym (2,i) = cosine(currAsym, asym_trans2);
-        colName{i} = ['CosWith' variableNames{i}];
+        colName{i} = ['Cos' variableNames{i}];
     end
     
     cosAsym = array2table(cosAsym);
