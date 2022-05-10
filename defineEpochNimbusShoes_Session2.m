@@ -2,7 +2,7 @@ function [eps] = defineEpochNimbusShoes_Session2(nantype, subjID)
 
 % names={'Base', 'EarlyA', 'LateA' ,'EarlyP', 'LateP'};
 
-names={'Base','TMBaseFast','PostShortFromShoes','OG 1','Pos Short 2','OG 2','Neg Short 2','OG 3','TM fast','TM tied 2','TM tied 3'};
+names={'OGBase','TMBaseFast','PostShortFromShoes','OG 1','Pos Short 2','OG 2','Neg Short 2','OG 3','TM fast','TM tied 2','TM tied 3'};
 
 % if strcmp(subjID, 'NTR_02')
 %     exemptFirstShortSplit = 23;
