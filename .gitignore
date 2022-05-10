@@ -10,3 +10,7 @@ gui/.DS_Store
 /data*
 /RegressionAnalysis/RegModelResults*
 *.png
+*.ai
+*.eps
+*.pdf
+*fig
