@@ -1,4 +1,4 @@
-function [eps] = defineEpochNIM_OG_UpdateV4(nantype, subjID)
+function [eps] = defineEpochNIM__UpdateV4(nantype, subjID)
 
 
 % names={'WithinEnvSwitch (-\DeltaEMG_{on(+)})2','Adapt (\DeltaEMG_{on(-)})2','PosShort','ShortSplit','WithinEnvSwitchFromShoe (-\DeltaEMG_{on(+)})2','PosSplit_{late} - OG_{post}(-\DeltaEMG_{off(+)})','ShoeSplit_{late} - OG_{post}(-Shoe\DeltaEMG_{off(+)})','OGPostShoe','OGPostPosShort','NegSplit_{late} - OG_{post}(-\DeltaEMG_{off(-)})','SwapShoeSplit_{late} - OG_{post}(-Shoe\DeltaEMG_{off(-)})','OGPostNegShort','-\DeltaEMG_{on(-)}'};
