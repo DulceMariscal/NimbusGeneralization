@@ -22,7 +22,7 @@ clear; close all; clc;
 % changeCondName('CTR_02_2','TM tied 4','TM slow')
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'CTS';
+groupID = 'CTR';
 saveResAndFigure = false;
 plotAllEpoch = true;
 plotIndSubjects = false;
@@ -72,8 +72,8 @@ refEpSlow = defineReferenceEpoch('TM tied 4(slow)',ep);
 
 newLabelPrefix = defineMuscleList(muscleOrder);
 normalizedTMFullAbrupt.removeBadStrides;
-normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,ep(1,:));
-% normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,refEp);
+% normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,ep(1,:));
+normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,refEp);
 
 ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
 %ll = normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^(s|f)[A-Z]+_s');
@@ -90,9 +90,11 @@ if strcmp(groupID, 'CTS_03')
 elseif contains(groupID,'CTR_02')
     badMuscleNames = {'fTFLs'};
 elseif contains(groupID,'CTS_04')
-    badMuscleNames = {'sLGs','fTAs'};
-elseif contains(groupID,'CTS_05') %0.0296
     badMuscleNames = {'sLGs'};
+elseif contains(groupID,'CTS_05')
+    badMuscleNames = {'sLGs'};
+elseif contains(groupID,'CTR_05') %0.0296
+    badMuscleNames = {'sHIPs'};
 elseif contains(groupID,'CTS_06') %needs to be reevaluted
     badMuscleNames = {'sTAs'};
 elseif contains(groupID,'CTR')
@@ -155,7 +157,13 @@ if plotAllEpoch
     end
 end
 %% Getting norm of epoch of interest
-refEp = defineReferenceEpoch('OGbase',ep);
+
+if (contains(groupID, 'CTS'))
+    refEp = defineReferenceEpoch('OGbase',ep);
+else
+    refEp = defineReferenceEpoch('TRbase',ep);
+end
+
 removeBias=1;
 plotGroup=0;
 
@@ -168,6 +176,7 @@ end
 if removeBias==1
     bias=refEp;
 else
+    
     bias=[];
 end
 if plotAllEpoch
@@ -189,6 +198,7 @@ if plotAllEpoch
         flip=true;
         
         [~,~,~,Data,~] = adaptDataSubject.plotCheckerboards(newLabelPrefix,refEp,fh,ph(1,1),[],flip); %plot TM tied 1 reference
+        Data = Data(~isnan(Data));
         title({[refEp.Properties.ObsNames{1} '[' num2str(refEp.Stride_No(1)) ']'] ['Norm=', num2str(norm(Data))]});
         norData=norm(Data);
         VarNames{1,1}= refEp.Properties.ObsNames{1};
@@ -196,6 +206,7 @@ if plotAllEpoch
 
         for ii=1:8
             [~,~,~,Data,~]= adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(ii,:),fh,ph(1,ii+1),bias,flip);%plot all epochs normalized by the fast baseline          
+            Data = Data(~isnan(Data));
             norData=norm(Data);
             title({[ep.Properties.ObsNames{ii} '[' num2str(ep.Stride_No(ii)) ']'] ['Norm=', num2str(norData)]});
             VarNames{ii+1,1}= ep.Properties.ObsNames{ii};
@@ -204,12 +215,14 @@ if plotAllEpoch
         
         [~,~,~,Data,~]= adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(9,:),fh,ph(1,10),refEpLate,flip);%plot the early Post - late Ada block
          title({[ep.Properties.ObsNames{9} '[' num2str(ep.Stride_No(9)) ']'] ['Norm=', num2str(norm(Data))]});
-        norData=norm(Data);
+        Data = Data(~isnan(Data));
+         norData=norm(Data);
         VarNames{10,1}= ep.Properties.ObsNames{9};
         VarNames{10,i+1}=norData;
         
         for ii=10:11
             [~,~,~,Data,~]= adaptDataSubject.plotCheckerboards(newLabelPrefix,ep(ii,:),fh,ph(1,ii+1),bias,flip);%plot all remaining epochs normalized by the fast baseline
+            Data = Data(~isnan(Data));
             norData=norm(Data);
             title({[ep.Properties.ObsNames{ii} '[' num2str(ep.Stride_No(ii)) ']'] ['Norm=', num2str(norData)]});
             VarNames{ii+1,1}= ep.Properties.ObsNames{ii};
@@ -240,11 +253,11 @@ end
 
 if plotGroup
     GroupTable = cell2table([VarNames],'VariableNames',{'Epoch',groupID});
-    save(['WithBadStridesGNorm_', groupID,'_0', num2str(removeBias)], 'GroupTable')
+    save(['GNorm_', groupID,'_0', num2str(removeBias)], 'GroupTable')
 else
     IndvTable = cell2table([VarNames],'VariableNames',{'Epoch',subID{:}});
     meanTable = array2table( nanmean(cell2mat(VarNames(:,2:end)),2),'VariableNames',convertCharsToStrings(groupID));
-    save(['WithBadStridesNorm_', groupID,'_0', num2str(removeBias)], 'IndvTable', 'meanTable')
+    save(['Norm_', groupID,'_', num2str(removeBias)], 'IndvTable', 'meanTable')
 end
 
 %% plot subsets of epochs: AE with context specific baseline correction

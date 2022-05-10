@@ -72,9 +72,9 @@ refEpSlow = defineReferenceEpoch('TM tied 4(slow)',ep);
 
 newLabelPrefix = defineMuscleList(muscleOrder);
 
-normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,ep(1,:));
-% normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,refEp);
-normalizedTMFullAbrupt.removeBadStrides;
+% normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,ep(1,:));
+normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,refEp);
+% normalizedTMFullAbrupt.removeBadStrides;
 
 ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
 %ll = normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^(s|f)[A-Z]+_s');
@@ -486,7 +486,7 @@ end
 clc;close all
 usefft = 0; normalizeData = 0;
 normalize=1;
-% regModelVersion='default';
+regModelVersion='default';
 
 
 for splitCount = 5
@@ -566,7 +566,7 @@ for splitCount = 5
     end
     %% plot checkerboards and run regression per group
     if length(subID) > 1 || plotGroup
-        for flip = [1,2]
+        for flip = [1]
             if splitCount == 1 %first short split, fast baseline - split
                 ep=defineEpochVR_OG_UpdateV3('nanmean');
                 refPosShort = defineReferenceEpoch('WithinEnvSwitch (-\DeltaEMG_{on(+)})', ep);
