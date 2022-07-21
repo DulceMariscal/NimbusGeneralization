@@ -1,4 +1,4 @@
-function fh=plotEMGtraces(expData,conds,muscle,late,strides,normalize,normCond)
+function fh=plotEMGtraces(expData,conds,muscle,late,strides,normalize,normCond,IgnoreStridesEarly)
 %% Plot the EMG ttraces for the Nimbus generalization project
 %
 %INPUTS:
@@ -73,13 +73,13 @@ for m=1:length(muscle)
 
 
             if l==1
-                data=getDataEMGtraces(expData,muscle{m},conds(c),leg{l},late,strides);
+                data=getDataEMGtraces(expData,muscle{m},conds(c),leg{l},late,strides,IgnoreStridesEarly);
                 if normalize==1
                     norm=getDataEMGtraces(expData,muscle{m},normCond,leg{l},1,40);
                 end
                 tit=['R' muscle{m}];
             elseif l==2
-                data=getDataEMGtraces(expData,muscle{m},conds(c),leg{l},late,strides);
+                data=getDataEMGtraces(expData,muscle{m},conds(c),leg{l},late,strides,IgnoreStridesEarly);
                 if normalize==1
                     norm=getDataEMGtraces(expData,muscle{m},normCond,leg{l},1,40);
                 end

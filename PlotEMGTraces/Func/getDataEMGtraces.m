@@ -1,4 +1,4 @@
-function [data]=getDataEMGtraces(expData,muscle,cond,leg,late,strides)
+function [data]=getDataEMGtraces(expData,muscle,cond,leg,late,strides,IgnoreStridesEarly)
 %% get time series EMG data 
 % This function returns the EMG as a time series
 %
@@ -37,9 +37,9 @@ if late==1
 elseif late==0
     if size(data.Data,3)>strides
         
-        data=data.getPartialStridesAsATS(2:strides);
+        data=data.getPartialStridesAsATS(IgnoreStridesEarly:strides+IgnoreStridesEarly);
     else
-        data=data.getPartialStridesAsATS(2:size(data.Data,3));
+        data=data.getPartialStridesAsATS(IgnoreStridesEarly:size(data.Data,3)+IgnoreStridesEarly);
         warning(strcat([cond{1}, ' does not have ', num2str(strides),' strides']))
     end
 else
