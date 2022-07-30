@@ -1,7 +1,7 @@
 %% Adding Norm to adaptData
 
 % Load data and Find norms for the entire time courses
-%This code will find Euclidean norms for the entire time courses
+%This code will find Euclidean norm at each step for the entire time courses
 %Created by DMM0 5/10/2022
 
 % 1) load subjects
@@ -12,7 +12,7 @@
 
 clear;clc; close all
 %% 1: load and prep data
-subID= 'PATR03';
+subID= 'BATR01';
 load([subID, 'params.mat'])
 
 
@@ -21,7 +21,7 @@ load([subID, 'params.mat'])
 
 
 muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'HIP'};
-
+% muscleOrder={'TA'};
 n_muscles = length(muscleOrder);
 
 ep=defineEpochs_regressionYA('nanmean');
@@ -48,7 +48,7 @@ aux1=[];
 Subj = adaptData; %Dummy variable
 
 
-for i = 1:numel(newLabelPrefix) %loop on the all the muscles
+for i = 2:numel(newLabelPrefix) %loop on the all the muscles
     
     DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']})); %Find data index (row where the muscles are)
     
@@ -59,7 +59,7 @@ for i = 1:numel(newLabelPrefix) %loop on the all the muscles
     end
     
     
-    data=[data Subj.data.Data(:,DataIdx)]; %Concatenating all the muscle data
+    data=[data Subj.data.Data(:,DataIdx(3:6))]; %Concatenating all the muscle data
     data(isnan(data))=0; % if nan set to zero the norm function cant work with nan
     
 end
@@ -137,7 +137,7 @@ for t=1:length(tt) % loop on all the trials
         data2asym=aux3-OGrefasym(:,1);
 
         
-    else  %IF they are type TM remove TM baseline 
+    else  %If they are type TM remove TM baseline 
         
         Idx = find(Subj.data.Data(:,trial)==zz);
         aux2=data(Idx,:)';
@@ -169,9 +169,10 @@ adaptData.data=adaptData.data.appendData(temp,{'UnBiasNormEMG','UnBiasNormEMGasy
 
 %% Plot some of the parameters 
 
-params= {'NormEMG','UnBiasNormEMG'};
+params= {'NormEMG','UnBiasNormEMG','stepLengthAsym'};
+% adaptData.plotAvgTimeCourse(adaptData,params)
 adaptData.plotAvgTimeCourse(adaptData,params,adaptData.metaData.conditionName,5)
 
 %% Save params file 
 
-save([subID 'paramsEMGnorm.mat'],'adaptData','-v7.3')
+% save([subID 'paramsEMGnorm.mat'],'adaptData','-v7.3')

@@ -17,7 +17,7 @@
 clear; clc; close all
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'PATS';
+groupID = 'PATR';
 saveResAndFigure = false;
 plotAllEpoch = true;
 plotIndSubjects = true;
@@ -66,6 +66,7 @@ subjectsToPlotResDirs = {}; % from SLcode
 
 muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'HIP'};
 
+% muscleOrder={'TA'};
 n_muscles = length(muscleOrder);
 
 n_subjects = length(subID);
@@ -216,7 +217,7 @@ for idx = 1:numel(subID)
             end
 
             
-            data=[data Subj.data.Data(:,DataIdx)];
+            data=[data Subj.data.Data(:,DataIdx(3:6))];
             data(isnan(data))=0;
 
         end
@@ -226,126 +227,126 @@ for idx = 1:numel(subID)
         dataAsym=data-fftshift(data,2);
         dataAsym=dataAsym(:,1:size(dataAsym,2)/2,:);
         temp(:,1)=vecnorm(data');
-        temp(:,2)=vecnorm(dataAsym');
+%         temp(:,2)=vecnorm(dataAsym');
         aux1=find(temp(:,1)>50);
         temp(aux1,:)=nan;
-        normalizedTMFullAbrupt.adaptData{idx}.data=normalizedTMFullAbrupt.adaptData{idx}.data.appendData(temp,{'NormEMG','NormEMGasym'},...
-            {'Norm of all the muscles','Norm asym of all the muscles'});
+        normalizedTMFullAbrupt.adaptData{idx}.data=normalizedTMFullAbrupt.adaptData{idx}.data.appendData(temp,{'EMGNorm'},...
+            {'Norm of muscles during stance'});
     end
     
     
     
 end
 
-%% Removing Bias 
-
-if contains(groupID,'NTS') ||  contains(groupID,'NTR') ||  contains(groupID,'CTR') || contains(groupID,'CTS')
-    ep=defineEpochVR_OG_UpdateV8('nanmean');
-    refEpTR= defineReferenceEpoch('TRbase',ep);
-    refEpOG= defineReferenceEpoch('OGbase',ep);
-else
-    ep=defineEpochs_regressionYA('nanmean');
-    refEpTR= defineReferenceEpoch('TM base',ep);
-    refEpOG= defineReferenceEpoch('OG base',ep);
-end
-
-padWithNaNFlag=true;
-
-[OGref]=normalizedTMFullAbrupt.getPrefixedEpochData(newLabelPrefix,refEpOG,padWithNaNFlag); 
-OGref=squeeze(OGref);
-OGrefasym=OGref-fftshift(OGref,1);
-OGrefasym=OGref(1:size(OGref,1)/2,:,:);
-
-[TRref]=normalizedTMFullAbrupt.getPrefixedEpochData(newLabelPrefix,refEpTR,padWithNaNFlag); 
-TRref=squeeze(TRref);
-TRrefasym=TRref-fftshift(TRref,1);
-TRrefasym=TRref(1:size(TRref,1)/2,:,:);
-
-for idx = 1:numel(subID)
-    data=[];
-    temp=[];
-    data3=[];
-    data3asym=[];
-
-    subjIdx = find(contains(normalizedTMFullAbrupt.ID, subID{idx}));
-
-    
-    
-    if ~isempty(subjIdx)
-        
-        Subj = normalizedTMFullAbrupt.adaptData{subjIdx};
-
-        
-        for i = 1:numel(newLabelPrefix)
-            
-            DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']}));
-            if length(DataIdx)<12
-                DataIdxlast=DataIdx(end)+[1:3];
-                DataIdx= [DataIdx; DataIdxlast'];
-            end
-            
-                        
-            data=[data Subj.data.Data(:,DataIdx)];
-            data(isnan(data))=0;
-
-        end    
-        %         subjectsToPlot{end}.adaptData{subjIdx} = badSubj;
-        trial=find(contains(Subj.data.labels, {'trial'}));
-        tt=unique(Subj.data.Data(:,trial));
-        for t=1:length(tt)
-            zz=tt(t);
-            aux2=[];
-            aux3=[];
-            if find(contains(Subj.data.trialTypes(zz), {'OG'} ))
-                
-                Idx = find(Subj.data.Data(:,trial)==zz);
-                aux2=data(Idx,:)';
-                data2= aux2-OGref(:,subjIdx);
-                
-                aux3=aux2-fftshift(aux2,1);
-                aux3=aux3(1:size(aux3,1)/2,:,:);
-                
-                data2asym=aux3-OGrefasym(:,subjIdx);
-                
-                
-                
-                
-                
-            else
-                
-                Idx = find(Subj.data.Data(:,trial)==zz);
-                aux2=data(Idx,:)';
-                data2= aux2-TRref(:,subjIdx);
-                
-                aux3=aux2-fftshift(aux2,1);
-                aux3=aux3(1:size(aux3,1)/2,:,:);
-                
-                data2asym=aux3-TRrefasym(:,subjIdx);
-                
-                
-            end
-            
-            %                 trialidx=
-            
-            
-            
-            data3=[data3 data2];
-            data3asym=[data3asym data2asym];
-            
-        end
-        data3(isnan(data3))=0;
-        data3asym(isnan(data3asym))=0;
-        temp(:,1)=vecnorm(data3);
-        temp(:,2)=vecnorm(data3asym);
-        aux1=find(temp(:,1)>50);
-        temp(aux1,:)=nan;
-        aux1=normalizedTMFullAbrupt.adaptData{idx}.data.Data;
-        normalizedTMFullAbrupt.adaptData{idx}.data=normalizedTMFullAbrupt.adaptData{idx}.data.appendData(temp,{'UnBiasNormEMG','UnBiasNormEMGasym'},{'Context specifci unbais Norm of all the muscles','Context specifci unbais Norm asym of all the muscles'});
-    end
-    
-    
-    
-end
+% %% Removing Bias 
+% 
+% if contains(groupID,'NTS') ||  contains(groupID,'NTR') ||  contains(groupID,'CTR') || contains(groupID,'CTS')
+%     ep=defineEpochVR_OG_UpdateV8('nanmean');
+%     refEpTR= defineReferenceEpoch('TRbase',ep);
+%     refEpOG= defineReferenceEpoch('OGbase',ep);
+% else
+%     ep=defineEpochs_regressionYA('nanmean');
+%     refEpTR= defineReferenceEpoch('TM base',ep);
+%     refEpOG= defineReferenceEpoch('OG base',ep);
+% end
+% 
+% padWithNaNFlag=true;
+% 
+% [OGref]=normalizedTMFullAbrupt.getPrefixedEpochData(newLabelPrefix,refEpOG,padWithNaNFlag); 
+% OGref=squeeze(OGref);
+% OGrefasym=OGref-fftshift(OGref,1);
+% OGrefasym=OGref(1:size(OGref,1)/2,:,:);
+% 
+% [TRref]=normalizedTMFullAbrupt.getPrefixedEpochData(newLabelPrefix,refEpTR,padWithNaNFlag); 
+% TRref=squeeze(TRref);
+% TRrefasym=TRref-fftshift(TRref,1);
+% TRrefasym=TRref(1:size(TRref,1)/2,:,:);
+% 
+% for idx = 1:numel(subID)
+%     data=[];
+%     temp=[];
+%     data3=[];
+%     data3asym=[];
+% 
+%     subjIdx = find(contains(normalizedTMFullAbrupt.ID, subID{idx}));
+% 
+%     
+%     
+%     if ~isempty(subjIdx)
+%         
+%         Subj = normalizedTMFullAbrupt.adaptData{subjIdx};
+% 
+%         
+%         for i = 1:numel(newLabelPrefix)
+%             
+%             DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']}));
+%             if length(DataIdx)<12
+%                 DataIdxlast=DataIdx(end)+[1:3];
+%                 DataIdx= [DataIdx; DataIdxlast'];
+%             end
+%             
+%                         
+%             data=[data Subj.data.Data(:,DataIdx)];
+%             data(isnan(data))=0;
+% 
+%         end    
+%         %         subjectsToPlot{end}.adaptData{subjIdx} = badSubj;
+%         trial=find(contains(Subj.data.labels, {'trial'}));
+%         tt=unique(Subj.data.Data(:,trial));
+%         for t=1:length(tt)
+%             zz=tt(t);
+%             aux2=[];
+%             aux3=[];
+%             if find(contains(Subj.data.trialTypes(zz), {'OG'} ))
+%                 
+%                 Idx = find(Subj.data.Data(:,trial)==zz);
+%                 aux2=data(Idx,:)';
+%                 data2= aux2-OGref(:,subjIdx);
+%                 
+%                 aux3=aux2-fftshift(aux2,1);
+%                 aux3=aux3(1:size(aux3,1)/2,:,:);
+%                 
+%                 data2asym=aux3-OGrefasym(:,subjIdx);
+%                 
+%                 
+%                 
+%                 
+%                 
+%             else
+%                 
+%                 Idx = find(Subj.data.Data(:,trial)==zz);
+%                 aux2=data(Idx,:)';
+%                 data2= aux2-TRref(:,subjIdx);
+%                 
+%                 aux3=aux2-fftshift(aux2,1);
+%                 aux3=aux3(1:size(aux3,1)/2,:,:);
+%                 
+%                 data2asym=aux3-TRrefasym(:,subjIdx);
+%                 
+%                 
+%             end
+%             
+%             %                 trialidx=
+%             
+%             
+%             
+%             data3=[data3 data2];
+%             data3asym=[data3asym data2asym];
+%             
+%         end
+%         data3(isnan(data3))=0;
+%         data3asym(isnan(data3asym))=0;
+%         temp(:,1)=vecnorm(data3);
+%         temp(:,2)=vecnorm(data3asym);
+%         aux1=find(temp(:,1)>50);
+%         temp(aux1,:)=nan;
+%         aux1=normalizedTMFullAbrupt.adaptData{idx}.data.Data;
+%         normalizedTMFullAbrupt.adaptData{idx}.data=normalizedTMFullAbrupt.adaptData{idx}.data.appendData(temp,{'UnBiasNormEMG','UnBiasNormEMGasym'},{'Context specifci unbais Norm of all the muscles','Context specifci unbais Norm asym of all the muscles'});
+%     end
+%     
+%     
+%     
+% end
 
 %% SAVE GROUP DATA 
 
@@ -365,4 +366,4 @@ end
 %     CTR= normalizedTMFullAbrupt;
 % end
 
-save([groupID, '_EMGnorm.mat'], 'group')
+% save([groupID, '_EMGnorm.mat'], 'group')

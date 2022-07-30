@@ -36,12 +36,12 @@ end
 
 
 lm=1:2:2*length(muscle)+1;
-if late==1
-    condlegend=strcat(repmat(conds,1,1),'_{late}');
-else
-
-    condlegend=strcat(repmat(conds,1,1),'_{early}');
-end
+% if late(c)==1
+%     condlegend=strcat(repmat(conds,1,1),'_{late}');
+% else
+% 
+%     condlegend=strcat(repmat(conds,1,1),'_{early}');
+% end
 
 
 fh=figure('Units','Normalized');
@@ -73,13 +73,13 @@ for m=1:length(muscle)
 
 
             if l==1
-                data=getDataEMGtraces(expData,muscle{m},conds(c),leg{l},late,strides,IgnoreStridesEarly);
+                data=getDataEMGtraces(expData,muscle{m},conds(c),leg{l},late(c),strides(c),IgnoreStridesEarly(c));
                 if normalize==1
                     norm=getDataEMGtraces(expData,muscle{m},normCond,leg{l},1,40);
                 end
                 tit=['R' muscle{m}];
             elseif l==2
-                data=getDataEMGtraces(expData,muscle{m},conds(c),leg{l},late,strides,IgnoreStridesEarly);
+                data=getDataEMGtraces(expData,muscle{m},conds(c),leg{l},late(c),strides(c),IgnoreStridesEarly(c));
                 if normalize==1
                     norm=getDataEMGtraces(expData,muscle{m},normCond,leg{l},1,40);
                 end
@@ -102,6 +102,14 @@ for m=1:length(muscle)
             end
             ph=subplot(row,colum,lm(m)+l-1);
             data.plot(fh,ph,condColors(c,:),[],0,[-49:0],prc,false);
+            
+            if late(c)==1
+                condlegend(c)=strcat(repmat(conds(c),1,1),'_{late}');
+            else
+                
+                condlegend(c)=strcat(repmat(conds(c),1,1),'_{early}');
+            end
+
 
 
         end
@@ -114,12 +122,12 @@ for m=1:length(muscle)
 
 
 end
-if late==1
-    title('Late Phases')
-
-else
-    title('Early Phases')
-end
+% if late==1
+%     title('Late Phases')
+% 
+% else
+%     title('Early Phases')
+% end
 legend(ll(end:-1:1),condlegend{:})
 
 

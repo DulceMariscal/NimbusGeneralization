@@ -55,7 +55,12 @@ cond={'Post1'};
 Opacity=0.5;
 
 groups=[1 2];
-labels={'TR','TS'};
+% labels={'TS','TS'};
+labels={'YA', 'OA'}
+dots=1;
+
+% data{1}.epost_ind=nan(10,length(groups));
+% data{2}.epost_ind=nan(10,length(groups));
 
 % figure
 legend('AutoUpdate','off')
@@ -70,14 +75,14 @@ for group=groups
     for xhat=1:2
         
         if xhat==1
-            figure(1)
+%             figure(1)
             X=X1{group};
             timecourse=1:2;
             shortTimecourse=4;
             AE=6;
             
         else
-            figure(2)
+%             figure(2)
             X=X2{group};
             shortTimecourse=4;
             timecourse=1:2;
@@ -96,7 +101,7 @@ for group=groups
             temp=[];
             
             
-            subplot(2,3,timecourse)
+%             subplot(2,3,timecourse)
             hold on
             temp=nan(strides(c),size(X,2));
             
@@ -152,7 +157,7 @@ for group=groups
             yline(0)
             ylim([-1 1.2])
             
-            subplot(2,3, 4)
+%             subplot(2,3, 4)
             y(isnan(y))=[];
             E(isnan(E))=[];
             x_ea=1:length(y);
@@ -161,18 +166,53 @@ for group=groups
             
             
         end
+
+        if dots==1
+%             subplot(2,3,5)
+%             xl=[1 1 2];
+%             plot(xl(loop),abs(y(1)*scale) ,"o","MarkerSize",25, 'MarkerFaceColor',color); hold on;
+%             errorbar(xl(loop),abs(y(1)*scale),E(1),'LineStyle','none','color','k','LineWidth',2)
+        end
+        
         
         if c==1
-            subplot(2,3,AE)
-            ea_data=temp(1,:);
-            bar(loop,y(1)*scale,'FaceColor',color,'BarWidth',0.9)
-            hold on
-            errorbar(loop,y(1)*scale,E(1),'LineStyle','none','color','k','LineWidth',2)
-            for ss=1:size(X,2)
-                plot(loop-0.03,temp(2,ss)*scale,'.','MarkerSize', 15, 'Color',[150 150 150]./255)
-%                  text(loop,temp(2,ss)*scale,num2str(subj(ss)),'FontSize',14)
-            end
+            %             subplot(2,3,AE)
             
+            if xhat==1
+                
+                figure(1)
+                subplot(1,2,xhat)
+                ea_data=temp(1,:);
+                bar(loop,abs(y(1)*scale),'FaceColor',color,'BarWidth',0.9)
+                data{xhat}.epost_mean(loop)=abs(y(1)*scale);
+                hold on
+                errorbar(loop,abs(y(1)*scale),E(1),'LineStyle','none','color','k','LineWidth',2)
+                data{xhat}.epost_se(loop)=E(1);
+                for ss=1:size(X,2)
+                    plot(loop-0.03,abs(temp(1,ss)*scale),'.','MarkerSize', 15, 'Color',[150 150 150]./255)
+                    data{xhat}.epost_ind(ss,loop)=abs(temp(1,ss)*scale);
+                    text(loop,abs(temp(1,ss)*scale),num2str(subj(ss)),'FontSize',14)
+                    
+                end
+                
+            else
+                figure(1)
+                subplot(1,2,xhat)
+                ea_data=temp(1,:);
+                bar(loop,y(1)*scale,'FaceColor',color,'BarWidth',0.9)
+                data{xhat}.epost_mean(loop)=y(1)*scale;
+                hold on
+                errorbar(loop,y(1)*scale,E(1),'LineStyle','none','color','k','LineWidth',2)
+                data{xhat}.epost_se(loop)=E(1);
+                for ss=1:size(X,2)
+                    plot(loop-0.03,temp(1,ss)*scale,'.','MarkerSize', 15, 'Color',[150 150 150]./255)
+                    data{xhat}.epost_ind(ss,loop)=temp(1,ss)*scale;
+                    text(loop,temp(1,ss)*scale,num2str(subj(ss)),'FontSize',14)
+                    
+                end
+            
+            
+            end
         end
         
         
@@ -215,12 +255,16 @@ for group=groups
 %     subplot(2,8,steeadystate)
 %     set(gca, 'XTick', 1:length(groups), 'XTickLabels', labels(groups))
 %     title('Steady State')
-    subplot(2,3,AE)
-    title('Early Post')
-    set(gca, 'XTick', 1:length(groups), 'XTickLabels',  labels(groups))
-%     subplot(2,8,delta)
-%     title('Delta')
-%     set(gca, 'XTick', 1:length(groups), 'XTickLabels', labels(groups))
+%     subplot(2,3,AE)
+%     title('Early Post')
+% %     set(gca, 'XTick', [1 3], 'XTickLabels',  labels(groups))
+% 
+% %     subplot(2,8,delta)
+% %     title('Delta')
+% %     set(gca, 'XTick', 1:length(groups), 'XTickLabels', labels(groups))
+%     subplot(2,3,5)
+%     title('Early Post')
+%     set(gca, 'XTick', 1:length(groups), 'XTickLabels',  labels(groups))
     
 end
 set(gcf,'color','w')
