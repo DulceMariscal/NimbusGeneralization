@@ -17,7 +17,7 @@
 clear; clc; close all
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'PATR';
+groupID = 'BATR';
 saveResAndFigure = false;
 plotAllEpoch = true;
 plotIndSubjects = true;
@@ -192,6 +192,8 @@ subjectsToPlotID{end+1} = groupID;% from SLcode
 %     end
 % end
 %% Norm Stride by Stride 
+label=strcat(newLabelPrefix,'Norm');
+desc=strcat(strcat(strcat(label,' muscle during stance')));
 
 for idx = 1:numel(subID)
     data=[];
@@ -217,21 +219,22 @@ for idx = 1:numel(subID)
             end
 
             
-            data=[data Subj.data.Data(:,DataIdx(3:6))];
+            data=[Subj.data.Data(:,DataIdx)];
             data(isnan(data))=0;
 
-        end
+       
         
         %         subjectsToPlot{end}.adaptData{subjIdx} = badSubj;
         data(isnan(data))=0;
         dataAsym=data-fftshift(data,2);
         dataAsym=dataAsym(:,1:size(dataAsym,2)/2,:);
-        temp(:,1)=vecnorm(data');
-%         temp(:,2)=vecnorm(dataAsym');
+        temp(:,i)=vecnorm(data');
+%         temp(:,i)=vecnorm(dataAsym');
         aux1=find(temp(:,1)>50);
         temp(aux1,:)=nan;
-        normalizedTMFullAbrupt.adaptData{idx}.data=normalizedTMFullAbrupt.adaptData{idx}.data.appendData(temp,{'EMGNorm'},...
-            {'Norm of muscles during stance'});
+         end
+        normalizedTMFullAbrupt.adaptData{idx}.data=normalizedTMFullAbrupt.adaptData{idx}.data.appendData(temp,label,...
+            desc);
     end
     
     
