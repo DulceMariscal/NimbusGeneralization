@@ -2,7 +2,7 @@
 
 % Load data and Find norms for the entire time courses
 %This code will find Euclidean norms for the entire time courses
-%Created by DMM0 5/2022
+%Created by DMM0 5/2022 - Update by DMMO Oct 2023
 
 % 1) load subjects
 % 2) EMG normalization of baseline
@@ -11,208 +11,23 @@
 % 5) Compute bias removed stride by stride norm
 % 6) Saving params file 
 
-
-%% load subjects
+%% Define conditions
+saveData=1 %if you want to save your data 
+%% load subjects  and prep data (Step 1 and 2)
 
 % clear; clc; %close all
-
-% set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = {'BAT'};
-saveResAndFigure = false;
-plotAllEpoch = true;
-plotIndSubjects = true;
-plotGroup = false;
-kinenatics=false;
-
+groupID = {'C3'};
 scriptDir = cd;
-% files = dir ([scriptDir '/' groupID '*params.mat']);
-norms=[];
-norm1 = [];
-norm2 = [];
-% 
-% n_subjects = size(files,1);
-% subID = cell(1, n_subjects);
-% sub=cell(1,n_subjects);
-% 
-% for i = 1:n_subjects
-% 
-%     sub{i} = files(i).name; %for plotting group
-%     if kinenatics==0
-%         subID{i} = sub{i}(1:end-10);
-%     else
-%         subID{i} = sub{i}(1:end-14);
-%     end
-% end
-% subID
-% 
-% regModelVersion =  'default'; %'default'
-% 
-% 
-% 
-% %% 1: load and prep data
-% 
-% normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
-% % normalizedTMFullAbrupt=normalizedTMFullAbrupt.removeBadStrides; % we are
-% % going to add the EMGnorm for all strides we can't removeBadStrides 
-% 
-% 
-% subjectsToPlot = {}; % from SLcode
-% subjectsToPlotID = {}; % from SLcode
-% subjectsToPlotResDirs = {}; % from SLcode
-% 
-% % subjectsToPlot{end+1} = normalizedTMFullAbrupt; % from SLcode
-% % subjectsToPlotID{end+1} = groupID;% from SLcode
-% %subjectsToPlotResDirs{end+1} = resDir{end};% from SLcode
-% 
-% muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'HIP'};
-% 
-% n_muscles = length(muscleOrder);
-% 
-% n_subjects = length(subID);
-% 
-% 
-% if contains(groupID,'NTS') ||  contains(groupID,'NTR') ||  contains(groupID,'CTR') || contains(groupID,'CTS')
-% ep=defineEpochVR_OG_UpdateV8('nanmean');
-% % if contains(groupID,'TR')
-% %     refEp= defineReferenceEpoch('TRbase',ep); %fast tied 1 if short split 1, slow tied if 2nd split %Use for NTR and CTR
-% % elseif contains(groupID,'TS')
-% refEp= defineReferenceEpoch('OGbase',ep); %fast tied 1 if short split 1, slow tied if 2nd split %Use for NTS and CTS
-% % end
-% else
-% ep=defineEpochs_regressionYA('nanmean');  
-% refEp= defineReferenceEpoch('TM base',ep); 
-%     
-% end
-% newLabelPrefix = defineMuscleList(muscleOrder);
-% 
-% normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,refEp); %Normalized by TM base (aka mid baseline)
-% 
-% ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
-% l2=regexprep(regexprep(ll,'^Norm',''),'_s','s');
-% normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
-% newLabelPrefix = regexprep(newLabelPrefix,'_s','s');
-% 
-% %% Removing bad muscles 
-% 
-% 
-% % [normalizedTMFullAbrupt]=RemoveBadMuscles(normalizedTMFullAbrupt,{'BATS02','BATS04','BATS06','BATS09','BATS12','BATR14','BATR03','BATR10'},{{'fSOLs','sSOLs','fVMs','sVMs','fVLs','sVLs','sRFs','fRFs'},{'fBFs','sBFs'},{'fRFs','sRFs'},{'fRFs','sRFs'},{'sRFs','fRFs','fVLs','sVLs'},{'fVLs','sVLs','fVMs','sVMs'},{'fVLs','sVLs','fVMs','sVMs'},{'fVLs','sVLs','fVMs','sVMs'}});
-% 
-% % [normalizedTMFullAbrupt]=RemoveBadMuscles(normalizedTMFullAbrupt,{'BATS02','BATS04','BATS06','BATS09','BATS12','BATR14','BATR03','BATR10'},{{'fSOLs','sSOLs','fVMs','sVMs','fVLs','sVLs','sRFs','fRFs'},{'fBFs','sBFs'},{'fRFs','sRFs'},{'fRFs','sRFs'},{'sRFs','fRFs','fVLs','sVLs'},{'fVLs','sVLs','fVMs','sVMs'},{'fVLs','sVLs','fVMs','sVMs'},{'fVLs','sVLs','fVMs','sVMs'}});
-% % [normalizedTMFullAbrupt]=RemoveBadMuscles(normalizedTMFullAbrupt,{'BATR14','BATR03'},{{'fVLs','sVLs','fVMs','sVMs'},{'fVLs','sVLs','fVMs','sVMs'}});
-% normalizedTMFullAbrupt= RemovingBadMuscleToSubj(normalizedTMFullAbrupt);
-% 
-% %%
-% 
-% 
-% subjectsToPlot{end+1} = normalizedTMFullAbrupt; % from SLcode
-% subjectsToPlotID{end+1} = groupID;% from SLcode
-
-
 [normalizedGroupData, newLabelPrefix,n_subjects,subID]=creatingGroupdataWnormalizedEMG(groupID{1});
 removeMuscles=1;
-%% Removing bad muscles
+%% Removing bad muscles (Step 3) 
 %This script make sure that we always remove the same muscle for the
 %different analysis
 if removeMuscles==1
     normalizedGroupData= RemovingBadMuscleToSubj(normalizedGroupData);
 end
 
-%% Remove aftereffects using Shuqi's code
-% Bad muscles for group plots
-% %NTS
-% if contains(groupID,'NTS')
-%     badSubjID = {'NTS_01', 'NTS_03', 'NTS_05','NTS_06','NTS_07'}; %badSubj and muscle are index matched, if want to remove group, put group ID here
-%     badMuscles = {{'sHIPs', 'fHIPs','fSEMTs','sSEMTs'},{'sLGs', 'fLGs'},{'sBFs', 'fBFs','fVLs','sVLs','fVMs','sVMs'},{'sHIPs','fHIPs','sSOLs','fSOLs'},{'fRFs','sRFs'}}; %labels in group ID will be removed for all regression and AE computations;
-% 
-% elseif contains(groupID,'NTR')
-%     %NTR
-%     badSubjID = {'NTR_01','NTR_03','NTR_04'}; %badSubj and muscle are index matched, if want to remove group, put group ID here
-%     badMuscles = {{'fVLs','sVLs','sVMs','fVMs'},{'fRFs','sRFs'},{'sLGs','fLGs','sRFs','fRFs'}}; %labels in group ID will be removed for all regression and AE computations;
-% 
-% elseif contains(groupID,'CTR')
-%     % %CTR
-%     badSubjID = {'CTR_02','CTR_05'}; %badSubj and muscle are index matched, if want to remove group, put group ID here
-%     badMuscles = {{'sTFLs', 'fTFLs','fPERs','sPERs','fTAs','sTAs','sRFs','fRFs'},{'sHIPs', 'fHIPs','sPERs','fPERs'}}; %labels in group ID will be removed for all regression and AE computations;
-% 
-% elseif contains(groupID,'CTS')
-%     % %CTS
-%     badSubjID = {'CTS_03','CTS_04','CTS_05','CTS_06'}; %badSubj and muscle are index matched, if want to remove group, put group ID here
-%     badMuscles = {{'sHIPs','fHIPs'},{'sLGs', 'fLGs'},{'sLGs', 'fLGs'},{'sTAs', 'fTAs','fHIPs','sHIPs'}}; %labels in group ID will be removed for all regression and AE computations;
-% 
-% 
-% elseif contains(groupID,'AUF')
-%     badSubjID = {'AUF03V02', 'AUF03V04', 'AUF03V03','AUF04V03','AUF04V02'}; %badSubj and muscle are index matched, if want to remove group, put group ID here
-% badMuscles = {{'fMGs','sHIPs'},{'fMGs','sHIPs'},{'fMGs','sHIPs'},{'fBFs','fHIPs'},{'fRFs'}}; %labels in group ID will be removed for all regression and AE computations;
-% 
-% 
-% 
-% elseif contains(groupID,'ATS')
-%     badSubjID = {'ATS08'}; %badSubj and muscle are index matched, if want to remove group, put group ID here
-% badMuscles = {{'fHIPs','sHIPs','fRFs','sRFs'}}; %labels in group ID will be removed for all regression and AE computations;
-% 
-% elseif contains(groupID,'ATR')
-%     badSubjID = {'ATR04'}; %badSubj and muscle are index matched, if want to remove group, put group ID here
-% badMuscles = {{'fHIPs','sHIPs'}}; %labels in group ID will be removed for all regression and AE computations;
-% 
-% 
-% else
-%     
-% badSubjID = [];
-% end
-%ATR
-% badSubjID = {'ATR01','ATR02','ATR03','ATR04'}; %badSubj and muscle are index matched, if want to remove group, put group ID here
-% badMuscles = {{'sHIPs', 'fHIPs'},{'sRFs', 'fRFs','sVLs','fVLs'},{'sSEMTs','fSEMTs'},{'sHIPs','fHIPs','sRFs', 'fRFs'}}; %labels in group ID will be removed for all regression and AE computations;
-%
-% badSubjID = {'ATS01','ATR02','ATR03','ATR04'}; %badSubj and muscle are index matched, if want to remove group, put group ID here
-% badMuscles = {{'sRFs', 'fRFs'},{'sRFs', 'fRFs','sVLs','fVLs'},{'sSEMTs','fSEMTs'},{'sHIPs','fHIPs'}}; %labels in group ID will be removed for all regression and AE computations;
-
-
-%
-% symmetricLabelPrefix = repmat({newLabelPrefix},length(files),1);
-% newLabelPrefixPerSubj = repmat({newLabelPrefix},length(files),1);
-% if ~isempty(badSubjID)
-%     for idxToRemove = 1:numel(badSubjID)
-%         
-%         %     for j = 1: %possibly loop through all subjects with iteration j?
-%         subjIdx = find(contains(subjectsToPlot{end}.ID, badSubjID{idxToRemove}));
-%         %subjIdx = find(contains(sub,(badSubjID{idxToRemove})));
-%         
-%         %subjIdx = find(strcmp(files.name, badSubjID{idxToRemove}));
-%         %          subjIdx = find(strcmp(badSubjID{idxToRemove},files.name));
-%         %          subjIdx = find(contains(subjectsToPlot{end}.ID, badSubjID{idxToRemove}));
-%         
-%         
-%         
-%         if ~isempty(subjIdx)
-%             
-%             badSubj = normalizedTMFullAbrupt.adaptData{subjIdx};
-%             %badSubj = sub.adaptData{subjIdx};
-%             
-%             for i = 1:numel(badMuscles{idxToRemove})
-%                 
-%                 badDataIdx=find(contains(badSubj.data.labels, {[badMuscles{idxToRemove}{i}, ' ']}));
-%                 if length(badDataIdx)<12
-%                     badDataIdxl ast=badDataIdx(end)+[1:3];
-%                     badDataIdx= [badDataIdx; badDataIdxlast'];
-%                 end
-%                 %badDataIdx=find(contains(adaptData.data.labels, {[badMuscles{idxToRemove}{i}]}));
-%                 
-%                 badSubj.data.Data(:,badDataIdx) = 0;
-%                 %adaptData.data.Data(:,badDataIdx) = nan;
-%                 
-%                 disp(['Removing (Setting zeros) of ' badMuscles{idxToRemove}{i} ' from Subject: ' badSubj.subData.ID])
-%                 % disp(['Removing (Setting NaN) of ' badMuscles{idxToRemove}{i} ' from Subject: ' adaptData.subData.ID])
-%                 
-%             end
-%             normalizedTMFullAbrupt.adaptData{subjIdx} = badSubj;
-%         end
-%         
-%         
-%         
-%         
-%     end
-% end
-%% Norm Stride by Stride 
+%% Norm Stride by Stride (Step 4)
 
 for idx = 1:numel(subID)
     data=[];
@@ -230,20 +45,13 @@ for idx = 1:numel(subID)
 
         
         for i = 1:numel(newLabelPrefix)
-            
-            DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']}));
-            if length(DataIdx)<12
-                DataIdxlast=DataIdx(end)+[1:3];
-                DataIdx= [DataIdx; DataIdxlast'];
-            end
-
+            DataIdx=find(cellfun(@(x) ~isempty(x),regexp(Subj.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$'])));
             
             data=[data Subj.data.Data(:,DataIdx)];
             data(isnan(data))=0;
 
         end
         
-        %         subjectsToPlot{end}.adaptData{subjIdx} = badSubj;
         data(isnan(data))=0;
         dataAsym=data-fftshift(data,2);
         dataAsym=dataAsym(:,1:size(dataAsym,2)/2,:);
@@ -259,7 +67,7 @@ for idx = 1:numel(subID)
     
 end
 
-%% Removing Bias 
+%% Removing Bias (Step 5)
 
 if contains(groupID,'NTS') ||  contains(groupID,'NTR') ||  contains(groupID,'CTR') || contains(groupID,'CTS')
     ep=defineEpochVR_OG_UpdateV8('nanmean');
@@ -299,19 +107,12 @@ for idx = 1:numel(subID)
 
         
         for i = 1:numel(newLabelPrefix)
-            
-            DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']}));
-            if length(DataIdx)<12
-                DataIdxlast=DataIdx(end)+[1:3];
-                DataIdx= [DataIdx; DataIdxlast'];
-            end
-            
+            DataIdx=find(cellfun(@(x) ~isempty(x),regexp(Subj.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$'])));            
                         
             data=[data Subj.data.Data(:,DataIdx)];
             data(isnan(data))=0;
 
         end    
-        %         subjectsToPlot{end}.adaptData{subjIdx} = badSubj;
         trial=find(contains(Subj.data.labels, {'trial'}));
         tt=unique(Subj.data.Data(:,trial));
         for t=1:length(tt)
@@ -346,11 +147,7 @@ for idx = 1:numel(subID)
                 
                 
             end
-            
-            %                 trialidx=
-            
-            
-            
+   
             data3=[data3 data2];
             data3asym=[data3asym data2asym];
             
@@ -369,37 +166,19 @@ for idx = 1:numel(subID)
     
 end
 
-%% SAVE GROUP DATA 
+%% SAVE GROUP DATA (Step 6)
 
-% if contains(groupID,'NTS')
-%     
     group= normalizedGroupData;
-%     
-% elseif contains(groupID,'CTS')
-%     
-%     group = normalizedGroupData;
-%     
-% elseif contains(groupID,'NTR')
-%     
-%     = normalizedGroupData;
-% elseif contains(groupID,'CTR')
-%     
-%     CTR= normalizedGroupData;
-% end
 
-save([groupID{1}, '_EMGnormWO_C3S05.mat'], 'group')
+if saveData==1
+    save([groupID{1}, '_EMGnorm.mat'], 'group')
+end
 
-%%
-
-% group2{2}=group;
-% group2{1}=adaptationData.createGroupAdaptData({'BATR03params','BATR04params'});
-% group2{1}=adaptationData.createGroupAdaptData({'BATS02params','BATS03params'});
-
+%%  This section is to plot the results
 
 group2=[];
 group2{1}=group;
-% group2{2}=[];
-%%
+
 
 conditions = {'OG base','TM base','Adaptation',...
     'Post 1','Post 2'};
