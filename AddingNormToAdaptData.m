@@ -14,10 +14,10 @@
 
 %% load subjects
 
-clear; clc; close all
+% clear; clc; %close all
 
 % set script parameters, SHOULD CHANGE/CHECK THIS EVERY TIME.
-groupID = 'PATS';
+groupID = {'BAT'};
 saveResAndFigure = false;
 plotAllEpoch = true;
 plotIndSubjects = true;
@@ -25,75 +25,97 @@ plotGroup = false;
 kinenatics=false;
 
 scriptDir = cd;
-files = dir ([scriptDir '/' groupID '*params.mat']);
+% files = dir ([scriptDir '/' groupID '*params.mat']);
 norms=[];
 norm1 = [];
 norm2 = [];
-
-n_subjects = size(files,1);
-subID = cell(1, n_subjects);
-sub=cell(1,n_subjects);
-
-for i = 1:n_subjects
-
-    sub{i} = files(i).name; %for plotting group
-    if kinenatics==0
-        subID{i} = sub{i}(1:end-10);
-    else
-        subID{i} = sub{i}(1:end-14);
-    end
-end
-subID
-
-regModelVersion =  'default'; %'default'
-
-
-
-%% 1: load and prep data
-
-normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
-% normalizedTMFullAbrupt=normalizedTMFullAbrupt.removeBadStrides; % we are
-% going to add the EMGnorm for all strides we can't removeBadStrides 
-
-
-subjectsToPlot = {}; % from SLcode
-subjectsToPlotID = {}; % from SLcode
-subjectsToPlotResDirs = {}; % from SLcode
-
+% 
+% n_subjects = size(files,1);
+% subID = cell(1, n_subjects);
+% sub=cell(1,n_subjects);
+% 
+% for i = 1:n_subjects
+% 
+%     sub{i} = files(i).name; %for plotting group
+%     if kinenatics==0
+%         subID{i} = sub{i}(1:end-10);
+%     else
+%         subID{i} = sub{i}(1:end-14);
+%     end
+% end
+% subID
+% 
+% regModelVersion =  'default'; %'default'
+% 
+% 
+% 
+% %% 1: load and prep data
+% 
+% normalizedTMFullAbrupt=adaptationData.createGroupAdaptData(sub);
+% % normalizedTMFullAbrupt=normalizedTMFullAbrupt.removeBadStrides; % we are
+% % going to add the EMGnorm for all strides we can't removeBadStrides 
+% 
+% 
+% subjectsToPlot = {}; % from SLcode
+% subjectsToPlotID = {}; % from SLcode
+% subjectsToPlotResDirs = {}; % from SLcode
+% 
+% % subjectsToPlot{end+1} = normalizedTMFullAbrupt; % from SLcode
+% % subjectsToPlotID{end+1} = groupID;% from SLcode
+% %subjectsToPlotResDirs{end+1} = resDir{end};% from SLcode
+% 
+% muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'HIP'};
+% 
+% n_muscles = length(muscleOrder);
+% 
+% n_subjects = length(subID);
+% 
+% 
+% if contains(groupID,'NTS') ||  contains(groupID,'NTR') ||  contains(groupID,'CTR') || contains(groupID,'CTS')
+% ep=defineEpochVR_OG_UpdateV8('nanmean');
+% % if contains(groupID,'TR')
+% %     refEp= defineReferenceEpoch('TRbase',ep); %fast tied 1 if short split 1, slow tied if 2nd split %Use for NTR and CTR
+% % elseif contains(groupID,'TS')
+% refEp= defineReferenceEpoch('OGbase',ep); %fast tied 1 if short split 1, slow tied if 2nd split %Use for NTS and CTS
+% % end
+% else
+% ep=defineEpochs_regressionYA('nanmean');  
+% refEp= defineReferenceEpoch('TM base',ep); 
+%     
+% end
+% newLabelPrefix = defineMuscleList(muscleOrder);
+% 
+% normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,refEp); %Normalized by TM base (aka mid baseline)
+% 
+% ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
+% l2=regexprep(regexprep(ll,'^Norm',''),'_s','s');
+% normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
+% newLabelPrefix = regexprep(newLabelPrefix,'_s','s');
+% 
+% %% Removing bad muscles 
+% 
+% 
+% % [normalizedTMFullAbrupt]=RemoveBadMuscles(normalizedTMFullAbrupt,{'BATS02','BATS04','BATS06','BATS09','BATS12','BATR14','BATR03','BATR10'},{{'fSOLs','sSOLs','fVMs','sVMs','fVLs','sVLs','sRFs','fRFs'},{'fBFs','sBFs'},{'fRFs','sRFs'},{'fRFs','sRFs'},{'sRFs','fRFs','fVLs','sVLs'},{'fVLs','sVLs','fVMs','sVMs'},{'fVLs','sVLs','fVMs','sVMs'},{'fVLs','sVLs','fVMs','sVMs'}});
+% 
+% % [normalizedTMFullAbrupt]=RemoveBadMuscles(normalizedTMFullAbrupt,{'BATS02','BATS04','BATS06','BATS09','BATS12','BATR14','BATR03','BATR10'},{{'fSOLs','sSOLs','fVMs','sVMs','fVLs','sVLs','sRFs','fRFs'},{'fBFs','sBFs'},{'fRFs','sRFs'},{'fRFs','sRFs'},{'sRFs','fRFs','fVLs','sVLs'},{'fVLs','sVLs','fVMs','sVMs'},{'fVLs','sVLs','fVMs','sVMs'},{'fVLs','sVLs','fVMs','sVMs'}});
+% % [normalizedTMFullAbrupt]=RemoveBadMuscles(normalizedTMFullAbrupt,{'BATR14','BATR03'},{{'fVLs','sVLs','fVMs','sVMs'},{'fVLs','sVLs','fVMs','sVMs'}});
+% normalizedTMFullAbrupt= RemovingBadMuscleToSubj(normalizedTMFullAbrupt);
+% 
+% %%
+% 
+% 
 % subjectsToPlot{end+1} = normalizedTMFullAbrupt; % from SLcode
 % subjectsToPlotID{end+1} = groupID;% from SLcode
-%subjectsToPlotResDirs{end+1} = resDir{end};% from SLcode
-
-muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'HIP'};
-
-n_muscles = length(muscleOrder);
-
-n_subjects = length(subID);
 
 
-if contains(groupID,'NTS') ||  contains(groupID,'NTR') ||  contains(groupID,'CTR') || contains(groupID,'CTS')
-ep=defineEpochVR_OG_UpdateV8('nanmean');
-% if contains(groupID,'TR')
-%     refEp= defineReferenceEpoch('TRbase',ep); %fast tied 1 if short split 1, slow tied if 2nd split %Use for NTR and CTR
-% elseif contains(groupID,'TS')
-refEp= defineReferenceEpoch('OGbase',ep); %fast tied 1 if short split 1, slow tied if 2nd split %Use for NTS and CTS
-% end
-else
-ep=defineEpochs_regressionYA('nanmean');  
-refEp= defineReferenceEpoch('TM base',ep); 
-    
+[normalizedGroupData, newLabelPrefix,n_subjects,subID]=creatingGroupdataWnormalizedEMG(groupID{1});
+removeMuscles=1;
+%% Removing bad muscles
+%This script make sure that we always remove the same muscle for the
+%different analysis
+if removeMuscles==1
+    normalizedGroupData= RemovingBadMuscleToSubj(normalizedGroupData);
 end
-newLabelPrefix = defineMuscleList(muscleOrder);
-
-normalizedTMFullAbrupt = normalizedTMFullAbrupt.normalizeToBaselineEpoch(newLabelPrefix,refEp); %Normalized by TM base (aka mid baseline)
-
-ll=normalizedTMFullAbrupt.adaptData{1}.data.getLabelsThatMatch('^Norm');
-l2=regexprep(regexprep(ll,'^Norm',''),'_s','s');
-normalizedTMFullAbrupt=normalizedTMFullAbrupt.renameParams(ll,l2);
-newLabelPrefix = regexprep(newLabelPrefix,'_s','s');
-
-subjectsToPlot{end+1} = normalizedTMFullAbrupt; % from SLcode
-subjectsToPlotID{end+1} = groupID;% from SLcode
 
 %% Remove aftereffects using Shuqi's code
 % Bad muscles for group plots
@@ -197,14 +219,14 @@ for idx = 1:numel(subID)
     temp=[];
     aux1=[];
     
-    subjIdx = find(contains(normalizedTMFullAbrupt.ID, subID{idx}));
+    subjIdx = find(contains(normalizedGroupData.ID, subID{idx}));
 
     
     
     
     if ~isempty(subjIdx)
         
-        Subj = normalizedTMFullAbrupt.adaptData{subjIdx};
+        Subj = normalizedGroupData.adaptData{subjIdx};
 
         
         for i = 1:numel(newLabelPrefix)
@@ -229,7 +251,7 @@ for idx = 1:numel(subID)
         temp(:,2)=vecnorm(dataAsym');
         aux1=find(temp(:,1)>50);
         temp(aux1,:)=nan;
-        normalizedTMFullAbrupt.adaptData{idx}.data=normalizedTMFullAbrupt.adaptData{idx}.data.appendData(temp,{'NormEMG','NormEMGasym'},...
+        normalizedGroupData.adaptData{idx}.data=normalizedGroupData.adaptData{idx}.data.appendData(temp,{'NormEMG','NormEMGasym'},...
             {'Norm of all the muscles','Norm asym of all the muscles'});
     end
     
@@ -251,12 +273,12 @@ end
 
 padWithNaNFlag=true;
 
-[OGref]=normalizedTMFullAbrupt.getPrefixedEpochData(newLabelPrefix,refEpOG,padWithNaNFlag); 
+[OGref]=normalizedGroupData.getPrefixedEpochData(newLabelPrefix,refEpOG,padWithNaNFlag); 
 OGref=squeeze(OGref);
 OGrefasym=OGref-fftshift(OGref,1);
 OGrefasym=OGref(1:size(OGref,1)/2,:,:);
 
-[TRref]=normalizedTMFullAbrupt.getPrefixedEpochData(newLabelPrefix,refEpTR,padWithNaNFlag); 
+[TRref]=normalizedGroupData.getPrefixedEpochData(newLabelPrefix,refEpTR,padWithNaNFlag); 
 TRref=squeeze(TRref);
 TRrefasym=TRref-fftshift(TRref,1);
 TRrefasym=TRref(1:size(TRref,1)/2,:,:);
@@ -267,13 +289,13 @@ for idx = 1:numel(subID)
     data3=[];
     data3asym=[];
 
-    subjIdx = find(contains(normalizedTMFullAbrupt.ID, subID{idx}));
+    subjIdx = find(contains(normalizedGroupData.ID, subID{idx}));
 
     
     
     if ~isempty(subjIdx)
         
-        Subj = normalizedTMFullAbrupt.adaptData{subjIdx};
+        Subj = normalizedGroupData.adaptData{subjIdx};
 
         
         for i = 1:numel(newLabelPrefix)
@@ -339,8 +361,8 @@ for idx = 1:numel(subID)
         temp(:,2)=vecnorm(data3asym);
         aux1=find(temp(:,1)>50);
         temp(aux1,:)=nan;
-        aux1=normalizedTMFullAbrupt.adaptData{idx}.data.Data;
-        normalizedTMFullAbrupt.adaptData{idx}.data=normalizedTMFullAbrupt.adaptData{idx}.data.appendData(temp,{'UnBiasNormEMG','UnBiasNormEMGasym'},{'Context specifci unbais Norm of all the muscles','Context specifci unbais Norm asym of all the muscles'});
+        aux1=normalizedGroupData.adaptData{idx}.data.Data;
+        normalizedGroupData.adaptData{idx}.data=normalizedGroupData.adaptData{idx}.data.appendData(temp,{'UnBiasNormEMG','UnBiasNormEMGasym'},{'Context specifci unbais Norm of all the muscles','Context specifci unbais Norm asym of all the muscles'});
     end
     
     
@@ -351,18 +373,62 @@ end
 
 % if contains(groupID,'NTS')
 %     
-    group= normalizedTMFullAbrupt;
+    group= normalizedGroupData;
 %     
 % elseif contains(groupID,'CTS')
 %     
-%     group = normalizedTMFullAbrupt;
+%     group = normalizedGroupData;
 %     
 % elseif contains(groupID,'NTR')
 %     
-%     = normalizedTMFullAbrupt;
+%     = normalizedGroupData;
 % elseif contains(groupID,'CTR')
 %     
-%     CTR= normalizedTMFullAbrupt;
+%     CTR= normalizedGroupData;
 % end
 
-save([groupID, '_EMGnorm.mat'], 'group')
+save([groupID{1}, '_EMGnormWO_C3S05.mat'], 'group')
+
+%%
+
+% group2{2}=group;
+% group2{1}=adaptationData.createGroupAdaptData({'BATR03params','BATR04params'});
+% group2{1}=adaptationData.createGroupAdaptData({'BATS02params','BATS03params'});
+
+
+group2=[];
+group2{1}=group;
+% group2{2}=[];
+%%
+
+conditions = {'OG base','TM base','Adaptation',...
+    'Post 1','Post 2'};
+
+
+params={'netContributionNorm2','NormEMG'};
+poster_colors;
+colorOrder=[p_red; p_orange; p_fade_green; p_fade_blue; p_plum; p_green; p_blue; p_fade_red; p_lime; p_yellow; [0 0 0];[0 1 1]];
+     
+binwidth=5; %Window of the running average
+trialMarkerFlag=0; %1 if you want to separete the time course by trial 0 to separece by condition 
+indivFlag=1; %0 to plot group mean 1 to plot indiv subjects
+indivSubs=[]; %Use when you want to plot a specidfic subject in a group 
+% colorOrder=[];%[p_red; p_orange; p_plum;p_fade_green]; %Let the function take care of this at least you wanted in a specific set of color then by my guess and add the list here
+biofeedback= 0; % At least that you are providing with biofeedback to the subject
+removeBiasFlag=0; %if you want to remove bias 
+%%Groups names 
+labels=[];
+filterFlag=[]; 
+% figure 
+% p=subplot(1,1,1);
+plotHandles=[];
+alignEnd=0; % # strides align at the end of the trial (PLAY with it as see what happens)
+alignIni=0; %  # strides align at the beginning of the trial (PLAY with it as see what happens) 
+
+adaptData=cellfun(@(x) x.adaptData,group2,'UniformOutput',false); %Notice that adaptDataGroups(1) decide that I only want to plot the CG group 
+[figh,avg,indv]=adaptationData.plotAvgTimeCourse(adaptData,params,conditions,binwidth,trialMarkerFlag,...
+    indivFlag,indivSubs,colorOrder,biofeedback,removeBiasFlag,labels,filterFlag,plotHandles,alignEnd,alignIni);
+% legend('AutoUpdate','off')
+% yline(0)
+
+% yline(nanmean(avg.NormEMGasym.TMbase.trial1(1,end-15:end)))
