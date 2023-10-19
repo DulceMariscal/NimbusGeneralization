@@ -1,3 +1,4 @@
+
 %% Adding Norm to adaptData
 
 % Load data and Find norms for the entire time courses
@@ -12,7 +13,7 @@
 
 clear;clc; close all
 %% 1: load and prep data
-subID= 'BATR01';
+subID= 'C3S07_S2';
 load([subID, 'params.mat'])
 
 
@@ -48,18 +49,18 @@ aux1=[];
 Subj = adaptData; %Dummy variable
 
 
-for i = 2:numel(newLabelPrefix) %loop on the all the muscles
+for i = 1:numel(newLabelPrefix) %loop on the all the muscles
+    DataIdx=find(cellfun(@(x) ~isempty(x),regexp(Subj.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$']))); %Find data index (row where the muscles are)
+%     DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']})); %Find data index (row where the muscles are)
+%     
+%     if length(DataIdx)<12 % In case the code does not grab all the muscles
+%         %(It should be 12 gaits phases of the gait cycle)
+%         DataIdxlast=DataIdx(end)+[1:3];
+%         DataIdx= [DataIdx; DataIdxlast'];
+%     end
     
-    DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']})); %Find data index (row where the muscles are)
     
-    if length(DataIdx)<12 % In case the code does not grab all the muscles
-        %(It should be 12 gaits phases of the gait cycle)
-        DataIdxlast=DataIdx(end)+[1:3];
-        DataIdx= [DataIdx; DataIdxlast'];
-    end
-    
-    
-    data=[data Subj.data.Data(:,DataIdx(3:6))]; %Concatenating all the muscle data
+    data=[data Subj.data.Data(:,DataIdx)]; %Concatenating all the muscle data
     data(isnan(data))=0; % if nan set to zero the norm function cant work with nan
     
 end
@@ -103,12 +104,12 @@ Subj = adaptData;
 
 
 for i = 1:numel(newLabelPrefix) %loop on the all the muscles
-    
-    DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']}));
-    if length(DataIdx)<12
-        DataIdxlast=DataIdx(end)+[1:3];
-        DataIdx= [DataIdx; DataIdxlast'];
-    end
+       DataIdx=find(cellfun(@(x) ~isempty(x),regexp(Subj.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$']))); %Find data index (row where the muscles are)
+%     DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']}));
+%     if length(DataIdx)<12
+%         DataIdxlast=DataIdx(end)+[1:3];
+%         DataIdx= [DataIdx; DataIdxlast'];
+%     end
     
     
     data=[data Subj.data.Data(:,DataIdx)];

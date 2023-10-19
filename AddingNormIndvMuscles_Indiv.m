@@ -12,7 +12,7 @@
 
 clear;clc; close all
 %% 1: load and prep data
-subID= 'BATR01';
+subID= 'BATR03';
 load([subID, 'params.mat'])
 
 
@@ -50,16 +50,18 @@ Subj = adaptData; %Dummy variable
 
 for i = 1:numel(newLabelPrefix) %loop on the all the muscles
     
-    DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']})); %Find data index (row where the muscles are)
+     DataIdx=find(cellfun(@(x) ~isempty(x),regexp(Subj.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$'])));
+%     
+%     DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']})); %Find data index (row where the muscles are)
+%     
+%     if length(DataIdx)<12 % In case the code does not grab all the muscles
+%         %(It should be 12 gaits phases of the gait cycle)
+%         DataIdxlast=DataIdx(end)+[1:3];
+%         DataIdx= [DataIdx; DataIdxlast'];
+%     end
     
-    if length(DataIdx)<12 % In case the code does not grab all the muscles
-        %(It should be 12 gaits phases of the gait cycle)
-        DataIdxlast=DataIdx(end)+[1:3];
-        DataIdx= [DataIdx; DataIdxlast'];
-    end
     
-    
-    data=[data Subj.data.Data(:,DataIdx(3:6))]; %Concatenating all the muscle data
+    data=[data Subj.data.Data(:,DataIdx)]; %Concatenating all the muscle data
     data(isnan(data))=0; % if nan set to zero the norm function cant work with nan
     
     data(isnan(data))=0;
@@ -174,7 +176,7 @@ adaptData.data=adaptData.data.appendData(temp,label,...
 %% Plot some of the parameters 
 
 cond={'TM base','Adaptation','Post 1'};
-params= {'sTAsNorm','fTAsNorm','sTFLsNorm','fTFLsNorm'};
+params= {'sTAsNorm','fTAsNorm'};
 % adaptData.plotAvgTimeCourse(adaptData,params)
 % adaptData.plotAvgTimeCourse(adaptData,params,adaptData.metaData.conditionName,5)
 adaptData.plotAvgTimeCourse(adaptData,params,cond,5)
