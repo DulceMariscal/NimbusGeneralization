@@ -47,7 +47,7 @@ data=[];
 temp=[];
 
 for i = 1:numel(newLabelPrefix) %loop on the all the muscles
-    DataIdx=find(cellfun(@(x) ~isempty(x),regexp(Subj.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$']))); %Find data index (row where the muscles are)
+    DataIdx=find(cellfun(@(x) ~isempty(x),regexp(adaptData.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$']))); %Find data index (row where the muscles are)
     data=[data adaptData.data.Data(:,DataIdx)]; %Concatenating all the muscle data
     data(isnan(data))=0; % if nan set to zero the norm function cant work with nan
     
@@ -87,7 +87,7 @@ data3asym=[];
 
 
 for i = 1:numel(newLabelPrefix) %loop on the all the muscles
-    DataIdx=find(cellfun(@(x) ~isempty(x),regexp(Subj.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$']))); %Find data index (row where the muscles are) 
+    DataIdx=find(cellfun(@(x) ~isempty(x),regexp(adaptData.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$']))); %Find data index (row where the muscles are) 
     data=[data Subj.data.Data(:,DataIdx)];
     data(isnan(data))=0;
     
@@ -102,7 +102,7 @@ for t=1:length(t) % loop on all the trials
     aux2=[];
     aux3=[];
     
-    if find(contains(Subj.data.trialTypes(trial_number), {'OG'} )) %IF they are type OG remove OG baseline 
+    if find(contains(adaptData.data.trialTypes(trial_number), {'OG'} )) %IF they are type OG remove OG baseline 
         
         Idx = find(Subj.data.Data(:,trial)==trial_number);
         aux2=data(Idx,:)'; %EMG data 
@@ -114,9 +114,9 @@ for t=1:length(t) % loop on all the trials
         data2asym=aux3-OGrefasym(:,1); %EMGasym - reference epoch 
 
         
-    elseif  find(contains(Subj.data.trialTypes(trial_number), {'TM'} )) %IF they are type TM remove TM baseline 
+    elseif  find(contains(adaptData.data.trialTypes(trial_number), {'TM'} )) %IF they are type TM remove TM baseline 
         
-        Idx = find(Subj.data.Data(:,trial)==trial_number);
+        Idx = find(adaptData.data.Data(:,trial)==trial_number);
         aux2=data(Idx,:)';
         data2= aux2-TRref(:,1);
         
