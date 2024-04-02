@@ -23,8 +23,8 @@ load([subID, 'params.mat'])
 
 muscleOrder={'TA', 'PER', 'SOL', 'LG', 'MG', 'BF', 'SEMB', 'SEMT', 'VM', 'VL', 'RF', 'TFL', 'GLU', 'HIP'};
 % muscleOrder={'TA'};
-n_muscles = length(muscleOrder);
 
+n_muscles = length(muscleOrder);
 ep=defineEpochs_regressionYA('nanmean');
 refEp= defineReferenceEpoch('TM base',ep);
 
@@ -42,21 +42,18 @@ newLabelPrefix = regexprep(newLabelPrefix,'_s','s');
 %% 2. Norm Stride by Stride
 
 % Defining needed variables
+
 data=[];
 temp=[];
-aux1=[];
-
-Subj = adaptData; %Dummy variable
-
 
 for i = 1:numel(newLabelPrefix) %loop on the all the muscles
     DataIdx=find(cellfun(@(x) ~isempty(x),regexp(Subj.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$']))); %Find data index (row where the muscles are)
-    data=[data Subj.data.Data(:,DataIdx)]; %Concatenating all the muscle data
+    data=[data adaptData.data.Data(:,DataIdx)]; %Concatenating all the muscle data
     data(isnan(data))=0; % if nan set to zero the norm function cant work with nan
     
 end
 
-data(isnan(data))=0;
+% data(isnan(data))=0;
 dataAsym=data-fftshift(data,2); % For asymmetry measure sustract the second part of the matrix
 dataAsym=dataAsym(:,1:size(dataAsym,2)/2,:); % Getting only the difference between legs
 temp(:,1)=vecnorm(data'); % getting the norm
@@ -88,8 +85,6 @@ temp=[];
 data3=[];
 data3asym=[];
 
-Subj = adaptData;
-
 
 for i = 1:numel(newLabelPrefix) %loop on the all the muscles
     DataIdx=find(cellfun(@(x) ~isempty(x),regexp(Subj.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$']))); %Find data index (row where the muscles are) 
@@ -98,30 +93,30 @@ for i = 1:numel(newLabelPrefix) %loop on the all the muscles
     
 end
 
-trial=find(contains(Subj.data.labels, {'trial'}));
-tt=unique(Subj.data.Data(:,trial));
+trial=find(contains(adaptData.data.labels, {'trial'})); %find label call trial
+t=unique(Subj.data.Data(:,trial));
 
-for t=1:length(tt) % loop on all the trials 
+for t=1:length(t) % loop on all the trials 
     
-    zz=tt(t);
+    trial_number=t(t);
     aux2=[];
     aux3=[];
     
-    if find(contains(Subj.data.trialTypes(zz), {'OG'} )) %IF they are type OG remove OG baseline 
+    if find(contains(Subj.data.trialTypes(trial_number), {'OG'} )) %IF they are type OG remove OG baseline 
         
-        Idx = find(Subj.data.Data(:,trial)==zz);
-        aux2=data(Idx,:)';
-        data2= aux2-OGref(:,1);
+        Idx = find(Subj.data.Data(:,trial)==trial_number);
+        aux2=data(Idx,:)'; %EMG data 
+        data2= aux2-OGref(:,1); %Data - reference epoch 
         
         aux3=aux2-fftshift(aux2,1); % For asymmetry measure sustract the second part of the matrix
-        aux3=aux3(1:size(aux3,1)/2,:,:);
+        aux3=aux3(1:size(aux3,1)/2,:,:); 
         
-        data2asym=aux3-OGrefasym(:,1);
+        data2asym=aux3-OGrefasym(:,1); %EMGasym - reference epoch 
 
         
-    else  %If they are type TM remove TM baseline 
+    elseif  find(contains(Subj.data.trialTypes(trial_number), {'TM'} )) %IF they are type TM remove TM baseline 
         
-        Idx = find(Subj.data.Data(:,trial)==zz);
+        Idx = find(Subj.data.Data(:,trial)==trial_number);
         aux2=data(Idx,:)';
         data2= aux2-TRref(:,1);
         
@@ -143,11 +138,12 @@ data3(isnan(data3))=0;
 data3asym(isnan(data3asym))=0;
 temp(:,1)=vecnorm(data3);
 temp(:,2)=vecnorm(data3asym);
-%         aux1=find(temp(:,1)>50);
+%         aux1=find(temp(:,1)>50); %this was done to clip the data use with
+%         caution 
 %         temp(aux1,:)=nan;
 aux1=adaptData.data.Data;
 adaptData.data=adaptData.data.appendData(temp,{'UnBiasNormEMG','UnBiasNormEMGasym'},...
-    {'Context specifci unbais Norm of all the muscles','Context specifci unbais Norm asym of all the muscles'});  % Adding parameter for to adaptData
+    {'Bnbais Norm of all the muscles','Unbais Norm asym of all the muscles'});  % Adding parameter for to adaptData
 
 %% Plot some of the parameters 
 
