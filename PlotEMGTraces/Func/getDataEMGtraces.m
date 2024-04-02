@@ -21,8 +21,8 @@ function [data]=getDataEMGtraces(expData,muscle,cond,leg,late,strides,IgnoreStri
 
 %%
 alignmentLengths=[16,32,16,32];
+% events={'kinRHS','kinLTO','kinLHS','kinRTO'};
 events={'RHS','LTO','LHS','RTO'};
-
 if leg=='R'
     data=expData.getAlignedField('procEMGData',cond,events,alignmentLengths).getPartialDataAsATS({['R' muscle]});
 elseif leg=='L'
