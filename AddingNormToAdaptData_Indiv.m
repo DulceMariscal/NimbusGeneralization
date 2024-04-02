@@ -51,15 +51,6 @@ Subj = adaptData; %Dummy variable
 
 for i = 1:numel(newLabelPrefix) %loop on the all the muscles
     DataIdx=find(cellfun(@(x) ~isempty(x),regexp(Subj.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$']))); %Find data index (row where the muscles are)
-%     DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']})); %Find data index (row where the muscles are)
-%     
-%     if length(DataIdx)<12 % In case the code does not grab all the muscles
-%         %(It should be 12 gaits phases of the gait cycle)
-%         DataIdxlast=DataIdx(end)+[1:3];
-%         DataIdx= [DataIdx; DataIdxlast'];
-%     end
-    
-    
     data=[data Subj.data.Data(:,DataIdx)]; %Concatenating all the muscle data
     data(isnan(data))=0; % if nan set to zero the norm function cant work with nan
     
@@ -70,9 +61,6 @@ dataAsym=data-fftshift(data,2); % For asymmetry measure sustract the second part
 dataAsym=dataAsym(:,1:size(dataAsym,2)/2,:); % Getting only the difference between legs
 temp(:,1)=vecnorm(data'); % getting the norm
 temp(:,2)=vecnorm(dataAsym'); % getting norm asymmetry value
-
-%         aux1=find(temp(:,1)>50);
-%         temp(aux1,:)=nan;
 adaptData.data=adaptData.data.appendData(temp,{'NormEMG','NormEMGasym'},...
     {'Norm of all the muscles','Norm asym of all the muscles'}); % Adding parameter for to adaptData
 
@@ -104,14 +92,7 @@ Subj = adaptData;
 
 
 for i = 1:numel(newLabelPrefix) %loop on the all the muscles
-       DataIdx=find(cellfun(@(x) ~isempty(x),regexp(Subj.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$']))); %Find data index (row where the muscles are)
-%     DataIdx=find(contains(Subj.data.labels, {[newLabelPrefix{i}, ' ']}));
-%     if length(DataIdx)<12
-%         DataIdxlast=DataIdx(end)+[1:3];
-%         DataIdx= [DataIdx; DataIdxlast'];
-%     end
-    
-    
+    DataIdx=find(cellfun(@(x) ~isempty(x),regexp(Subj.data.labels,['^' newLabelPrefix{i} '[ ]?\d+$']))); %Find data index (row where the muscles are) 
     data=[data Subj.data.Data(:,DataIdx)];
     data(isnan(data))=0;
     
