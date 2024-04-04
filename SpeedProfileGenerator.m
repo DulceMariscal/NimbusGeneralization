@@ -87,7 +87,7 @@ velL = midspeed*ones(str_num,1);
 % save(['MidBaseline_150strides_', num2str(speedFactor_fast), '_slow_', num2str(speedFactor_slow),'.mat'],'velL','velR')
 save(['MidBaseline_150strides.mat'],'velL','velR')
 
-%% Shor pertutrbation shoes on 
+%% Short pertutrbation shoes on 
 str_num = 30;
 
 velR = speedFactor*Fast_OGspeed_late*ones(str_num,1);
