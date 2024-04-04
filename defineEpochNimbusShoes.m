@@ -2,7 +2,7 @@ function [eps] = defineEpochNimbusShoes(nantype)
 
 % names={'Base', 'EarlyA', 'LateA' ,'EarlyP', 'LateP'};
 
-names={'OGBase','TMBaseShoes','SplitNeg','SplitPos','OGNimbus','Adaptation','Post1-Adapt_{SS}','Post1_{Early}','Post1_{Late}','Post2_{Early}','Post2_{Late}'};
+names={'OGbase','TMBaseShoes','SplitNeg','SplitPos','TRbase','Adaptation','Post1-Adapt_{SS}','Post1_{Early}','Post1_{Late}','Post2_{Early}','Post2_{Late}'};
 
 eps=defineEpochs(names,...
                 {'OG base','TM tied 1','Neg Short','Pos Short','TR base','Adaptation','Post 1','Post 1','Post 1','Post 2','Post 2'},...
