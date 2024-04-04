@@ -17,3 +17,4 @@ Oldfunctionignore/
 *fig
 *.mat
 Path4Study.m
+*.csv
